@@ -1,0 +1,404 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AlunoPapel {
+  ALUNO @map("aluno")
+  ADMIN @map("admin")
+}
+
+enum DiagnosticoStatus {
+  EM_ANDAMENTO @map("em_andamento")
+  FINALIZADO   @map("finalizado")
+  CANCELADO    @map("cancelado")
+}
+
+enum TipoOrigemDesempenho {
+  DIAGNOSTICO   @map("diagnostico")
+  SESSAO_ESTUDO @map("sessao_estudo")
+  REVISAO       @map("revisao")
+  MANUAL        @map("manual")
+}
+
+enum NivelPrioridade {
+  BAIXA   @map("baixa")
+  MEDIA   @map("media")
+  ALTA    @map("alta")
+  CRITICA @map("critica")
+}
+
+enum CronogramaStatus {
+  ATIVO       @map("ativo")
+  SUBSTITUIDO @map("substituido")
+  CANCELADO   @map("cancelado")
+  ARQUIVADO   @map("arquivado")
+}
+
+enum SessaoEstudoTipo {
+  ESTUDO   @map("estudo")
+  REVISAO  @map("revisao")
+  SIMULADO @map("simulado")
+}
+
+enum SessaoEstudoStatus {
+  PENDENTE  @map("pendente")
+  CONCLUIDA @map("concluida")
+  PERDIDA   @map("perdida")
+  CANCELADA @map("cancelada")
+}
+
+enum RevisaoStatus {
+  PENDENTE  @map("pendente")
+  CONCLUIDA @map("concluida")
+  ATRASADA  @map("atrasada")
+  CANCELADA @map("cancelada")
+}
+
+enum ResultadoRevisaoTipo {
+  ERROU   @map("errou")
+  DIFICIL @map("dificil")
+  BOM     @map("bom")
+  FACIL   @map("facil")
+}
+
+enum InsightJobStatus {
+  PENDENTE               @map("pendente")
+  PROCESSANDO            @map("processando")
+  AGUARDANDO_RETENTATIVA @map("aguardando_retentativa")
+  CONCLUIDO              @map("concluido")
+  FALHOU                 @map("falhou")
+}
+
+model Aluno {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  nome                String
+  email               String                 @unique
+  senhaHash           String                 @map("senha_hash")
+  papel               AlunoPapel             @default(ALUNO)
+  excluidoEm          DateTime?              @map("excluido_em")
+  criadoEm            DateTime               @default(now()) @map("criado_em")
+  atualizadoEm        DateTime               @updatedAt @map("atualizado_em")
+  disponibilidades    DisponibilidadeAluno[]
+  diagnosticos        Diagnostico[]
+  registrosDesempenho RegistroDesempenho[]
+  gaps                Gap[]
+  cronogramas         Cronograma[]
+  sessoesEstudo       SessaoEstudo[]
+  revisoes            Revisao[]
+  insightJobs         InsightJob[]
+  insights            Insight[]
+  recuperacoesSenha   RecuperacaoSenha[]
+  auditoriasAdmin     AuditoriaAdmin[]       @relation("AdminAuditorias")
+
+  @@map("alunos")
+}
+
+model Disciplina {
+  id                   String               @id @default(uuid()) @db.Uuid
+  nome                 String               @unique
+  codigo               String               @unique
+  ativo                Boolean              @default(true)
+  criadoEm             DateTime             @default(now()) @map("criado_em")
+  conteudos            Conteudo[]
+  diagnosticosQuestoes DiagnosticoQuestao[]
+  registrosDesempenho  RegistroDesempenho[]
+  gaps                 Gap[]
+  sessoesEstudo        SessaoEstudo[]
+  revisoes             Revisao[]
+  insightsDisciplinas  InsightDisciplina[]
+
+  @@map("disciplinas")
+}
+
+model Conteudo {
+  id                   String               @id @default(uuid()) @db.Uuid
+  disciplinaId         String               @map("disciplina_id") @db.Uuid
+  nome                 String
+  ativo                Boolean              @default(true)
+  criadoEm             DateTime             @default(now()) @map("criado_em")
+  disciplina           Disciplina           @relation(fields: [disciplinaId], references: [id])
+  diagnosticosQuestoes DiagnosticoQuestao[]
+  registrosDesempenho  RegistroDesempenho[]
+  gaps                 Gap[]
+  sessoesEstudo        SessaoEstudo[]
+  revisoes             Revisao[]
+
+  @@unique([disciplinaId, nome])
+  @@index([disciplinaId])
+  @@map("conteudos")
+}
+
+model DisponibilidadeAluno {
+  id                 String   @id @default(uuid()) @db.Uuid
+  alunoId            String   @map("aluno_id") @db.Uuid
+  diaSemana          Int      @map("dia_semana")
+  minutosDisponiveis Int      @map("minutos_disponiveis")
+  criadoEm           DateTime @default(now()) @map("criado_em")
+  atualizadoEm       DateTime @updatedAt @map("atualizado_em")
+  aluno              Aluno    @relation(fields: [alunoId], references: [id])
+
+  @@unique([alunoId, diaSemana])
+  @@index([alunoId])
+  @@map("disponibilidades_aluno")
+}
+
+model Diagnostico {
+  id                  String               @id @default(uuid()) @db.Uuid
+  alunoId             String               @map("aluno_id") @db.Uuid
+  status              DiagnosticoStatus    @default(EM_ANDAMENTO)
+  criadoEm            DateTime             @default(now()) @map("criado_em")
+  finalizadoEm        DateTime?            @map("finalizado_em")
+  aluno               Aluno                @relation(fields: [alunoId], references: [id])
+  questoes            DiagnosticoQuestao[]
+  registrosDesempenho RegistroDesempenho[]
+
+  @@index([alunoId, status])
+  @@map("diagnosticos")
+}
+
+model DiagnosticoQuestao {
+  id            String               @id @default(uuid()) @db.Uuid
+  diagnosticoId String               @map("diagnostico_id") @db.Uuid
+  questionYear  Int                  @map("year")
+  questionIndex Int                  @map("index")
+  language      String               @default("default") @db.VarChar(16)
+  ordem         Int
+  disciplinaId  String?              @map("disciplina_id") @db.Uuid
+  conteudoId    String?              @map("conteudo_id") @db.Uuid
+  diagnostico   Diagnostico          @relation(fields: [diagnosticoId], references: [id])
+  disciplina    Disciplina?          @relation(fields: [disciplinaId], references: [id])
+  conteudo      Conteudo?            @relation(fields: [conteudoId], references: [id])
+  resposta      RespostaDiagnostico?
+
+  @@unique([diagnosticoId, questionYear, questionIndex, language])
+  @@index([diagnosticoId])
+  @@index([disciplinaId, conteudoId])
+  @@map("diagnosticos_questoes")
+}
+
+model RespostaDiagnostico {
+  id                   String             @id @default(uuid()) @db.Uuid
+  diagnosticoQuestaoId String             @unique @map("diagnostico_questao_id") @db.Uuid
+  alternativaMarcada   String             @map("alternativa_marcada") @db.VarChar(8)
+  acertoInformado      Boolean?           @map("acerto_informado")
+  correcaoVerificada   Boolean            @default(false) @map("correcao_verificada")
+  respondidoEm         DateTime           @default(now()) @map("respondido_em")
+  atualizadoEm         DateTime           @updatedAt @map("atualizado_em")
+  diagnosticoQuestao   DiagnosticoQuestao @relation(fields: [diagnosticoQuestaoId], references: [id])
+
+  @@map("respostas_diagnostico")
+}
+
+model RegistroDesempenho {
+  id                 String               @id @default(uuid()) @db.Uuid
+  alunoId            String               @map("aluno_id") @db.Uuid
+  diagnosticoId      String?              @map("diagnostico_id") @db.Uuid
+  disciplinaId       String               @map("disciplina_id") @db.Uuid
+  conteudoId         String               @map("conteudo_id") @db.Uuid
+  tipoOrigem         TipoOrigemDesempenho @map("tipo_origem")
+  totalQuestoes      Int                  @map("total_questoes")
+  acertos            Int
+  percentual         Decimal              @db.Decimal(5, 2)
+  correcaoVerificada Boolean              @default(false) @map("correcao_verificada")
+  registradoEm       DateTime             @default(now()) @map("registrado_em")
+  aluno              Aluno                @relation(fields: [alunoId], references: [id])
+  diagnostico        Diagnostico?         @relation(fields: [diagnosticoId], references: [id])
+  disciplina         Disciplina           @relation(fields: [disciplinaId], references: [id])
+  conteudo           Conteudo             @relation(fields: [conteudoId], references: [id])
+
+  @@index([alunoId, registradoEm])
+  @@index([diagnosticoId])
+  @@index([disciplinaId, conteudoId])
+  @@map("registros_desempenho")
+}
+
+model Gap {
+  id                  String          @id @default(uuid()) @db.Uuid
+  alunoId             String          @map("aluno_id") @db.Uuid
+  disciplinaId        String          @map("disciplina_id") @db.Uuid
+  conteudoId          String          @map("conteudo_id") @db.Uuid
+  desempenho          Decimal         @db.Decimal(5, 2)
+  pontuacaoGap        Decimal         @map("pontuacao_gap") @db.Decimal(8, 2)
+  pontuacaoUrgencia   Decimal         @map("pontuacao_urgencia") @db.Decimal(8, 2)
+  pontuacaoPrioridade Decimal         @map("pontuacao_prioridade") @db.Decimal(8, 2)
+  nivelPrioridade     NivelPrioridade @map("nivel_prioridade")
+  calculadoEm         DateTime        @default(now()) @map("calculado_em")
+  aluno               Aluno           @relation(fields: [alunoId], references: [id])
+  disciplina          Disciplina      @relation(fields: [disciplinaId], references: [id])
+  conteudo            Conteudo        @relation(fields: [conteudoId], references: [id])
+
+  @@index([alunoId, nivelPrioridade])
+  @@index([disciplinaId, conteudoId])
+  @@map("gaps")
+}
+
+model Cronograma {
+  id            String           @id @default(uuid()) @db.Uuid
+  alunoId       String           @map("aluno_id") @db.Uuid
+  status        CronogramaStatus @default(ATIVO)
+  validoAPartir DateTime         @map("valido_a_partir")
+  validoAte     DateTime?        @map("valido_ate")
+  geradoEm      DateTime         @default(now()) @map("gerado_em")
+  criadoEm      DateTime         @default(now()) @map("criado_em")
+  atualizadoEm  DateTime         @updatedAt @map("atualizado_em")
+  aluno         Aluno            @relation(fields: [alunoId], references: [id])
+  sessoesEstudo SessaoEstudo[]
+  revisoes      Revisao[]
+
+  @@index([alunoId, status])
+  @@map("cronogramas")
+}
+
+model SessaoEstudo {
+  id             String             @id @default(uuid()) @db.Uuid
+  cronogramaId   String             @map("cronograma_id") @db.Uuid
+  alunoId        String             @map("aluno_id") @db.Uuid
+  disciplinaId   String             @map("disciplina_id") @db.Uuid
+  conteudoId     String             @map("conteudo_id") @db.Uuid
+  revisaoId      String?            @map("revisao_id") @db.Uuid
+  tipo           SessaoEstudoTipo
+  status         SessaoEstudoStatus @default(PENDENTE)
+  agendadoPara   DateTime           @map("agendado_para")
+  duracaoMinutos Int                @map("duracao_minutos")
+  concluidoEm    DateTime?          @map("concluido_em")
+  criadoEm       DateTime           @default(now()) @map("criado_em")
+  atualizadoEm   DateTime           @updatedAt @map("atualizado_em")
+  cronograma     Cronograma         @relation(fields: [cronogramaId], references: [id])
+  aluno          Aluno              @relation(fields: [alunoId], references: [id])
+  disciplina     Disciplina         @relation(fields: [disciplinaId], references: [id])
+  conteudo       Conteudo           @relation(fields: [conteudoId], references: [id])
+  revisao        Revisao?           @relation(fields: [revisaoId], references: [id])
+
+  @@index([alunoId, agendadoPara])
+  @@index([cronogramaId])
+  @@index([revisaoId])
+  @@map("sessoes_estudo")
+}
+
+model Revisao {
+  id               String             @id @default(uuid()) @db.Uuid
+  cronogramaId     String             @map("cronograma_id") @db.Uuid
+  alunoId          String             @map("aluno_id") @db.Uuid
+  disciplinaId     String             @map("disciplina_id") @db.Uuid
+  conteudoId       String             @map("conteudo_id") @db.Uuid
+  intervaloAtual   Int                @map("intervalo_atual")
+  proximaRevisaoEm DateTime           @map("proxima_revisao_em")
+  status           RevisaoStatus      @default(PENDENTE)
+  criadoEm         DateTime           @default(now()) @map("criado_em")
+  atualizadoEm     DateTime           @updatedAt @map("atualizado_em")
+  cronograma       Cronograma         @relation(fields: [cronogramaId], references: [id])
+  aluno            Aluno              @relation(fields: [alunoId], references: [id])
+  disciplina       Disciplina         @relation(fields: [disciplinaId], references: [id])
+  conteudo         Conteudo           @relation(fields: [conteudoId], references: [id])
+  resultados       ResultadoRevisao[]
+  sessoesEstudo    SessaoEstudo[]
+
+  @@index([cronogramaId, status])
+  @@index([alunoId, proximaRevisaoEm])
+  @@map("revisoes")
+}
+
+model ResultadoRevisao {
+  id           String               @id @default(uuid()) @db.Uuid
+  revisaoId    String               @map("revisao_id") @db.Uuid
+  resultado    ResultadoRevisaoTipo
+  registradoEm DateTime             @default(now()) @map("registrado_em")
+  revisao      Revisao              @relation(fields: [revisaoId], references: [id])
+
+  @@index([revisaoId])
+  @@map("resultados_revisao")
+}
+
+model InsightJob {
+  id                 String           @id @default(uuid()) @db.Uuid
+  alunoId            String           @map("aluno_id") @db.Uuid
+  status             InsightJobStatus @default(PENDENTE)
+  idempotencyKey     String           @map("idempotency_key")
+  payloadHash        String           @map("payload_hash")
+  tentativas         Int              @default(0)
+  proximaTentativaEm DateTime?        @map("proxima_tentativa_em")
+  leaseExpiraEm      DateTime?        @map("lease_expira_em")
+  erroCodigo         String?          @map("erro_codigo")
+  erroResumo         String?          @map("erro_resumo")
+  criadoEm           DateTime         @default(now()) @map("criado_em")
+  atualizadoEm       DateTime         @updatedAt @map("atualizado_em")
+  concluidoEm        DateTime?        @map("concluido_em")
+  aluno              Aluno            @relation(fields: [alunoId], references: [id])
+  insight            Insight?
+  outboxEventos      OutboxEvento[]
+
+  @@unique([alunoId, idempotencyKey])
+  @@index([status, proximaTentativaEm])
+  @@map("insight_jobs")
+}
+
+model Insight {
+  id                  String              @id @default(uuid()) @db.Uuid
+  alunoId             String              @map("aluno_id") @db.Uuid
+  jobId               String              @unique @map("job_id") @db.Uuid
+  conteudo            String
+  criadoEm            DateTime            @default(now()) @map("criado_em")
+  aluno               Aluno               @relation(fields: [alunoId], references: [id])
+  job                 InsightJob          @relation(fields: [jobId], references: [id])
+  insightsDisciplinas InsightDisciplina[]
+
+  @@index([alunoId, criadoEm])
+  @@map("insights")
+}
+
+model InsightDisciplina {
+  id           String     @id @default(uuid()) @db.Uuid
+  insightId    String     @map("insight_id") @db.Uuid
+  disciplinaId String     @map("disciplina_id") @db.Uuid
+  insight      Insight    @relation(fields: [insightId], references: [id])
+  disciplina   Disciplina @relation(fields: [disciplinaId], references: [id])
+
+  @@unique([insightId, disciplinaId])
+  @@index([disciplinaId])
+  @@map("insights_disciplinas")
+}
+
+model OutboxEvento {
+  id          String     @id @default(uuid()) @db.Uuid
+  jobId       String     @map("job_id") @db.Uuid
+  tipo        String
+  payload     Json
+  criadoEm    DateTime   @default(now()) @map("criado_em")
+  publicadoEm DateTime?  @map("publicado_em")
+  job         InsightJob @relation(fields: [jobId], references: [id])
+
+  @@index([publicadoEm, criadoEm])
+  @@map("outbox_eventos")
+}
+
+model RecuperacaoSenha {
+  id        String    @id @default(uuid()) @db.Uuid
+  alunoId   String    @map("aluno_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
+  expiraEm  DateTime  @map("expira_em")
+  usadoEm   DateTime? @map("usado_em")
+  criadoEm  DateTime  @default(now()) @map("criado_em")
+  aluno     Aluno     @relation(fields: [alunoId], references: [id])
+
+  @@index([alunoId, expiraEm])
+  @@map("recuperacoes_senha")
+}
+
+model AuditoriaAdmin {
+  id        String   @id @default(uuid()) @db.Uuid
+  adminId   String   @map("admin_id") @db.Uuid
+  acao      String
+  recurso   String
+  recursoId String?  @map("recurso_id") @db.Uuid
+  criadoEm  DateTime @default(now()) @map("criado_em")
+  admin     Aluno    @relation("AdminAuditorias", fields: [adminId], references: [id])
+
+  @@index([adminId, criadoEm])
+  @@index([recurso, recursoId])
+  @@map("auditoria_admin")
+}

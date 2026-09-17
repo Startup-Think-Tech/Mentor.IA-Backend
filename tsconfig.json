@@ -11,9 +11,12 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
+    "types": ["node"],
     "sourceMap": true,
+    "paths": {
+      "@mentor.ia/api/*": ["./src/*"]
+    },
     "outDir": "./dist",
-    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
