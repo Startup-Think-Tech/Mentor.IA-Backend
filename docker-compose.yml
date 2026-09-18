@@ -6,11 +6,11 @@ services:
       POSTGRES_USER: mentor_ia
       POSTGRES_PASSWORD: mentor_ia
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - mentor_ia_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U mentor_ia -d mentor_ia"]
+      test: ['CMD-SHELL', 'pg_isready -U mentor_ia -d mentor_ia']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -18,11 +18,27 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - mentor_ia_redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: mentor_ia
+      RABBITMQ_DEFAULT_PASS: mentor_ia
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - mentor_ia_rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,3 +46,4 @@ services:
 volumes:
   mentor_ia_postgres_data:
   mentor_ia_redis_data:
+  mentor_ia_rabbitmq_data:

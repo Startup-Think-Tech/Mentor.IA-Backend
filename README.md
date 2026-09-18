@@ -121,7 +121,7 @@ npm install
 cp .env.example .env
 ```
 
-Suba PostgreSQL e Redis a partir da pasta `api/`:
+Suba PostgreSQL, Redis e RabbitMQ a partir da pasta `api/`:
 
 ```bash
 docker compose up -d
@@ -153,12 +153,23 @@ URLs locais:
 - Health: `http://localhost:3001/api/v1/health`
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
+- RabbitMQ: `localhost:5672`
+- RabbitMQ Management: `http://localhost:15672`
+
+Credenciais locais do RabbitMQ Management:
+
+```text
+usuario: mentor_ia
+senha: mentor_ia
+```
 
 ## Variáveis De Ambiente
 
 ```env
 DATABASE_URL="postgresql://mentor_ia:mentor_ia@localhost:5432/mentor_ia?schema=public"
 REDIS_URL="redis://localhost:6379"
+RABBITMQ_URL="amqp://mentor_ia:mentor_ia@localhost:5672"
+RABBITMQ_INSIGHTS_QUEUE="insights_queue"
 PORT=3001
 ```
 
@@ -188,15 +199,17 @@ Não há barrel file em `src/config`; os imports devem apontar diretamente para 
 
 Variáveis validadas atualmente:
 
-| Variável          | Obrigatória | Padrão        |
-| ----------------- | ----------- | ------------- |
-| `DATABASE_URL`    | Sim         | -             |
-| `NODE_ENV`        | Não         | `development` |
-| `PORT`            | Não         | `3001`        |
-| `API_PREFIX`      | Não         | `api/v1`      |
-| `API_DOCS_PATH`   | Não         | `api/docs`    |
-| `SWAGGER_ENABLED` | Não         | `true`        |
-| `REDIS_URL`       | Não         | -             |
+| Variável                  | Obrigatória | Padrão                                      |
+| ------------------------- | ----------- | ------------------------------------------- |
+| `DATABASE_URL`            | Sim         | -                                           |
+| `NODE_ENV`                | Não         | `development`                               |
+| `PORT`                    | Não         | `3001`                                      |
+| `API_PREFIX`              | Não         | `api/v1`                                    |
+| `API_DOCS_PATH`           | Não         | `api/docs`                                  |
+| `SWAGGER_ENABLED`         | Não         | `true`                                      |
+| `REDIS_URL`               | Não         | -                                           |
+| `RABBITMQ_URL`            | Não         | `amqp://mentor_ia:mentor_ia@localhost:5672` |
+| `RABBITMQ_INSIGHTS_QUEUE` | Não         | `insights_queue`                            |
 
 Se uma variável obrigatória estiver ausente ou inválida, a API falha ao iniciar com erro de validação de configuração.
 
