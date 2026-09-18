@@ -1,11 +1,14 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { setupSwagger } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.setGlobalPrefix('api/v1');
+  const configService = app.get(ConfigService);
+
+  app.setGlobalPrefix(configService.get<string>('apiPrefix') ?? 'api/v1');
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
@@ -14,17 +17,8 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Mentor.ia API')
-    .setDescription(
-      'API para diagnostico, cronograma, revisoes e insights ENEM.',
-    )
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, swaggerDocument);
+  setupSwagger(app);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(configService.get<number>('port') ?? 3001);
 }
 void bootstrap();

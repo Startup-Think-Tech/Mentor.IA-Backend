@@ -30,6 +30,7 @@ Objetivos principais:
 - BullMQ para filas e workers
 - JWT e Passport para autenticação
 - Swagger em `/api/docs`
+- Joi para validação das variáveis de ambiente no bootstrap
 - bcrypt para hash de senhas
 - Nodemailer para e-mails transacionais
 - pdf-lib para relatórios/exportações em PDF
@@ -80,6 +81,10 @@ api/
   src/
     app.module.ts
     main.ts
+    config/
+      app.config.ts
+      env.validation.ts
+      swagger.config.ts
     health/
     prisma/
   docker-compose.yml
@@ -170,6 +175,30 @@ AI_PROVIDER_API_KEY=""
 AI_REQUEST_TIMEOUT_MS="60000"
 INSIGHT_MAX_ATTEMPTS="3"
 ```
+
+## Configuração Da Aplicação
+
+A configuração padrão fica em `src/config`:
+
+- `app.config.ts`: centraliza `PORT`, `API_PREFIX`, `API_DOCS_PATH`, `NODE_ENV` e habilitação do Swagger.
+- `env.validation.ts`: valida as variáveis de ambiente com Joi durante o bootstrap.
+- `swagger.config.ts`: configura a documentação OpenAPI com `DocumentBuilder` e `SwaggerModule`.
+
+Não há barrel file em `src/config`; os imports devem apontar diretamente para o arquivo usado.
+
+Variáveis validadas atualmente:
+
+| Variável          | Obrigatória | Padrão        |
+| ----------------- | ----------- | ------------- |
+| `DATABASE_URL`    | Sim         | -             |
+| `NODE_ENV`        | Não         | `development` |
+| `PORT`            | Não         | `3001`        |
+| `API_PREFIX`      | Não         | `api/v1`      |
+| `API_DOCS_PATH`   | Não         | `api/docs`    |
+| `SWAGGER_ENABLED` | Não         | `true`        |
+| `REDIS_URL`       | Não         | -             |
+
+Se uma variável obrigatória estiver ausente ou inválida, a API falha ao iniciar com erro de validação de configuração.
 
 ## Banco De Dados
 
