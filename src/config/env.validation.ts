@@ -7,9 +7,14 @@ export function validateEnv(config: Record<string, unknown>) {
     DATABASE_URL: Joi.string()
       .uri({ scheme: ['postgresql', 'postgres'] })
       .required(),
+    JWT_EXPIRES_IN: Joi.string().default('1d'),
+    JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
+    JWT_REFRESH_SECRET: Joi.string().min(32).optional(),
+    JWT_SECRET: Joi.string().min(32).required(),
     NODE_ENV: Joi.string()
       .valid('development', 'production', 'test')
       .default('development'),
+    PASSWORD_RESET_TTL_MINUTES: Joi.number().integer().min(1).default(30),
     PORT: Joi.number().port().default(3001),
     RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('insights_queue'),
     RABBITMQ_URL: Joi.string()
