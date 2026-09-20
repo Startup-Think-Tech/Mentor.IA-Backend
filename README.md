@@ -27,7 +27,7 @@ Objetivos principais:
 - Prisma 6
 - PostgreSQL
 - Redis
-- BullMQ para filas e workers
+- RabbitMQ para mensageria entre API e workers separados
 - JWT e Passport para autenticação
 - Swagger em `/api/docs`
 - Joi para validação das variáveis de ambiente no bootstrap
@@ -46,7 +46,8 @@ Frontend Next.js
     -> Módulos de negócio
     -> Prisma Client
     -> PostgreSQL
-    -> BullMQ
+    -> RabbitMQ
+      -> Worker NestJS separado
     -> Redis
     -> Serviços externos: API ENEM e IA
 ```
@@ -56,7 +57,7 @@ Camadas:
 - Controllers: recebem requisições HTTP, validam DTOs e expõem contratos REST.
 - Services: concentram regras de negócio, cálculos, orquestração e decisões do domínio.
 - Repositories/Prisma: persistem dados e consultam PostgreSQL.
-- Workers/Queues: executam tarefas demoradas ou retentáveis, como insights e integrações externas.
+- Workers separados: consomem mensagens do RabbitMQ e executam tarefas demoradas ou retentáveis, como insights e integrações externas.
 - Guards/Strategies: protegem rotas com autenticação e autorização.
 - DTOs: validam entrada com `class-validator` e `ValidationPipe` global.
 
@@ -69,6 +70,20 @@ Princípios:
 - Atividades concluídas permanecem intactas.
 - Questões ENEM não são armazenadas como catálogo local de enunciado e alternativas.
 - Falhas de IA ou fonte externa não devem derrubar os fluxos principais.
+
+### Worker Separado
+
+O processamento assíncrono deve rodar em um processo NestJS separado da API HTTP. A API apenas valida a requisição, registra o job durável no PostgreSQL e publica uma mensagem no RabbitMQ. O worker consome essa mensagem, executa a tarefa pesada e atualiza o estado do job no banco.
+
+Responsabilidades:
+
+- API HTTP: autenticação, autorização, validação, criação do job e publicação no RabbitMQ.
+- RabbitMQ: transporte das mensagens entre API e worker.
+- Worker NestJS separado: consumo da fila, chamadas externas, retentativas, persistência do resultado e atualização de status.
+- PostgreSQL: fonte de verdade para jobs, estados, resultados e histórico.
+- Redis: cache ou controle auxiliar quando necessário; não é usado como mecanismo de fila.
+
+O worker deve usar as mesmas variáveis `DATABASE_URL`, `RABBITMQ_URL` e `RABBITMQ_INSIGHTS_QUEUE`. Quando novas filas forem criadas, cada fluxo deve ter sua própria variável de fila para evitar acoplamento entre responsabilidades.
 
 ## Estrutura De Pastas
 
@@ -348,7 +363,7 @@ Fluxo esperado:
 
 1. `POST /insights/gerar` valida o aluno e cria um job durável.
 2. A API responde `202 Accepted` com `job_id`, `status` e `status_url`.
-3. Worker consome a fila via BullMQ.
+3. Worker separado consome a fila via RabbitMQ.
 4. Worker seleciona até três disciplinas de menor desempenho.
 5. Worker chama o provedor de IA com timeout configurável.
 6. Resultado é persistido em `insights` e associado às disciplinas.
@@ -602,7 +617,7 @@ docker compose ps
 
 ## Roadmap MVP
 
-1. Fundação técnica: NestJS, Prisma, PostgreSQL, Redis, BullMQ e Docker.
+1. Fundação técnica: NestJS, Prisma, PostgreSQL, Redis, RabbitMQ e Docker.
 2. Autenticação e onboarding de disponibilidade.
 3. Integração ENEM e diagnóstico.
 4. Cálculo de desempenho e gaps.
