@@ -16,10 +16,11 @@ export function validateEnv(config: Record<string, unknown>) {
       .default('development'),
     PASSWORD_RESET_TTL_MINUTES: Joi.number().integer().min(1).default(30),
     PORT: Joi.number().port().default(3001),
-    RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('insights_queue'),
+    RABBITMQ_EXCHANGE: Joi.string().default('mentor.events'),
+    RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('mentor.insights'),
     RABBITMQ_URL: Joi.string()
       .uri({ scheme: ['amqp', 'amqps'] })
-      .default('amqp://mentor_ia:mentor_ia@localhost:5672'),
+      .default('amqp://mentor:mentor@localhost:5672'),
     REDIS_URL: Joi.string()
       .uri({ scheme: ['redis', 'rediss'] })
       .optional(),
