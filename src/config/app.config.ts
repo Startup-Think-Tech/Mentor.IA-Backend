@@ -8,9 +8,5 @@ export const appConfig = () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   passwordResetTtlMinutes: Number(process.env.PASSWORD_RESET_TTL_MINUTES ?? 30),
   port: Number(process.env.PORT ?? 3001),
-  rabbitmqInsightsQueue:
-    process.env.RABBITMQ_INSIGHTS_QUEUE ?? 'insights_queue',
-  rabbitmqUrl:
-    process.env.RABBITMQ_URL ?? 'amqp://mentor_ia:mentor_ia@localhost:5672',
   swaggerEnabled: process.env.SWAGGER_ENABLED !== 'false',
 });
