@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { HealthModule } from './modules/health/health.module';
 import { RabbitMqModule } from './modules/rabbitmq/rabbitmq.module';
+import { AlunoModule } from './modules/v1/aluno/aluno.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RabbitMqModule } from './modules/rabbitmq/rabbitmq.module';
     }),
     PrismaModule,
     AuthModule,
+    AlunoModule,
     HealthModule,
     RabbitMqModule,
   ],
