@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
+import { DisponibilidadeModule } from './disponibilidade/disponibilidade.module';
+import { AlunoService } from './aluno.service';
 import { AlunoController } from './aluno.controller';
 import { AlunoRepository } from './aluno.repository';
-import { AlunoService } from './aluno.service';
 
 @Module({
-  imports: [AuthModule],
+  imports: [AuthModule, DisponibilidadeModule],
   controllers: [AlunoController],
   providers: [AlunoService, AlunoRepository],
 })
