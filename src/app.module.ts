@@ -8,6 +8,7 @@ import { PrismaModule } from './modules/v1/prisma/prisma.module';
 import { HealthModule } from './modules/v1/health/health.module';
 import { RabbitMqModule } from './modules/v1/rabbitmq/rabbitmq.module';
 import { AlunoModule } from './modules/v1/aluno/aluno.module';
+import { DisciplinasModule } from './modules/v1/disciplinas/disciplinas.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AlunoModule } from './modules/v1/aluno/aluno.module';
     AlunoModule,
     HealthModule,
     RabbitMqModule,
+    DisciplinasModule,
   ],
 })
 export class AppModule {}
