@@ -9,6 +9,7 @@ import { HealthModule } from './modules/v1/health/health.module';
 import { RabbitMqModule } from './modules/v1/rabbitmq/rabbitmq.module';
 import { AlunoModule } from './modules/v1/aluno/aluno.module';
 import { DisciplinasModule } from './modules/v1/disciplinas/disciplinas.module';
+import { GapsModule } from './modules/v1/gaps/gaps.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { DisciplinasModule } from './modules/v1/disciplinas/disciplinas.module';
     HealthModule,
     RabbitMqModule,
     DisciplinasModule,
+    GapsModule,
   ],
 })
 export class AppModule {}
