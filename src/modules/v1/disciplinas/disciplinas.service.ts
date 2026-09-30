@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
   ConflictException,
   Injectable,
@@ -8,12 +9,16 @@ import { CreateConteudoDto } from './dto/create-conteudo.dto';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { UpdateConteudoDto } from './dto/update-conteudo.dto';
 import { UpdateDisciplinaDto } from './dto/update-disciplina.dto';
+=======
+import { Injectable, NotFoundException } from '@nestjs/common';
+>>>>>>> refs/remotes/origin/main
 import { DisciplinasRepository } from './disciplinas.repository';
 
 @Injectable()
 export class DisciplinasService {
   constructor(private readonly disciplinasRepository: DisciplinasRepository) {}
 
+<<<<<<< HEAD
   findAllPublic() {
     return this.disciplinasRepository.findActiveDisciplinas();
   }
@@ -22,6 +27,15 @@ export class DisciplinasService {
     const disciplina =
       await this.disciplinasRepository.findActiveDisciplinaById(id);
 
+=======
+  findAll() {
+    return this.disciplinasRepository.findActiveDisciplines();
+  }
+
+  async findOne(id: string) {
+    const disciplina =
+      await this.disciplinasRepository.findActiveDisciplineById(id);
+>>>>>>> refs/remotes/origin/main
     if (!disciplina) {
       throw new NotFoundException('Disciplina não encontrada.');
     }
@@ -29,6 +43,7 @@ export class DisciplinasService {
     return disciplina;
   }
 
+<<<<<<< HEAD
   async findConteudosPublic(id: string) {
     await this.findOnePublic(id);
 
@@ -195,5 +210,12 @@ export class DisciplinasService {
     if (this.disciplinasRepository.isUniqueConstraintError(error)) {
       throw new ConflictException('Disciplina ou conteúdo já cadastrado.');
     }
+=======
+  async findContents(disciplinaId: string) {
+    await this.findOne(disciplinaId);
+    return this.disciplinasRepository.findActiveContentsByDisciplineId(
+      disciplinaId,
+    );
+>>>>>>> refs/remotes/origin/main
   }
 }

@@ -1,4 +1,5 @@
 import {
+<<<<<<< HEAD
   Body,
   Controller,
   Delete,
@@ -7,13 +8,22 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+=======
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+>>>>>>> refs/remotes/origin/main
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+<<<<<<< HEAD
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+=======
+>>>>>>> refs/remotes/origin/main
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -22,6 +32,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+<<<<<<< HEAD
 import { CreateConteudoDto } from './dto/create-conteudo.dto';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { UpdateConteudoDto } from './dto/update-conteudo.dto';
@@ -33,10 +44,21 @@ import { AdminGuard } from './guards/admin.guard';
 @ApiBearerAuth('bearer')
 @UseGuards(JwtAuthGuard)
 @Controller('disciplinas')
+=======
+import { ConteudoResponseDto } from './dto/conteudo-response.dto';
+import { DisciplinaResponseDto } from './dto/disciplina-response.dto';
+import { DisciplinasService } from './disciplinas.service';
+
+@ApiTags('Disciplinas')
+@ApiBearerAuth()
+@Controller('disciplinas')
+@UseGuards(JwtAuthGuard)
+>>>>>>> refs/remotes/origin/main
 export class DisciplinasController {
   constructor(private readonly disciplinasService: DisciplinasService) {}
 
   @Get()
+<<<<<<< HEAD
   @ApiOperation({
     summary: 'Listar disciplinas ativas',
     description: 'Retorna o catálogo ativo disponível ao aluno autenticado.',
@@ -227,5 +249,47 @@ export class AdminDisciplinasController {
     @Param('conteudoId', ParseUUIDPipe) conteudoId: string,
   ) {
     return this.disciplinasService.removeConteudo(id, conteudoId);
+=======
+  @ApiOperation({ summary: 'Lista as disciplinas ativas do catálogo' })
+  @ApiOkResponse({
+    description: 'Disciplinas ativas em ordem alfabética.',
+    type: [DisciplinaResponseDto],
+  })
+  @ApiUnauthorizedResponse({
+    description: 'JWT ausente, inválido ou expirado.',
+  })
+  findAll() {
+    return this.disciplinasService.findAll();
+  }
+
+  @Get(':id/conteudos')
+  @ApiOperation({ summary: 'Lista os conteúdos ativos de uma disciplina' })
+  @ApiParam({ name: 'id', description: 'UUID da disciplina.', format: 'uuid' })
+  @ApiOkResponse({
+    description: 'Conteúdos ativos em ordem alfabética.',
+    type: [ConteudoResponseDto],
+  })
+  @ApiNotFoundResponse({ description: 'Disciplina não encontrada.' })
+  @ApiUnauthorizedResponse({
+    description: 'JWT ausente, inválido ou expirado.',
+  })
+  findContents(@Param('id', new ParseUUIDPipe()) disciplinaId: string) {
+    return this.disciplinasService.findContents(disciplinaId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Consulta uma disciplina ativa do catálogo' })
+  @ApiParam({ name: 'id', description: 'UUID da disciplina.', format: 'uuid' })
+  @ApiOkResponse({
+    description: 'Disciplina ativa.',
+    type: DisciplinaResponseDto,
+  })
+  @ApiNotFoundResponse({ description: 'Disciplina não encontrada.' })
+  @ApiUnauthorizedResponse({
+    description: 'JWT ausente, inválido ou expirado.',
+  })
+  findOne(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.disciplinasService.findOne(id);
+>>>>>>> refs/remotes/origin/main
   }
 }

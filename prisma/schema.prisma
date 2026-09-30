@@ -322,6 +322,7 @@ model InsightJob {
   payloadHash        String           @map("payload_hash")
   tentativas         Int              @default(0)
   proximaTentativaEm DateTime?        @map("proxima_tentativa_em")
+  processingToken    String?          @map("processing_token") @db.Uuid
   leaseExpiraEm      DateTime?        @map("lease_expira_em")
   erroCodigo         String?          @map("erro_codigo")
   erroResumo         String?          @map("erro_resumo")
@@ -334,6 +335,7 @@ model InsightJob {
 
   @@unique([alunoId, idempotencyKey])
   @@index([status, proximaTentativaEm])
+  @@index([processingToken])
   @@map("insight_jobs")
 }
 
@@ -364,15 +366,21 @@ model InsightDisciplina {
 }
 
 model OutboxEvento {
-  id          String     @id @default(uuid()) @db.Uuid
-  jobId       String     @map("job_id") @db.Uuid
-  tipo        String
-  payload     Json
-  criadoEm    DateTime   @default(now()) @map("criado_em")
-  publicadoEm DateTime?  @map("publicado_em")
-  job         InsightJob @relation(fields: [jobId], references: [id])
+  id                 String     @id @default(uuid()) @db.Uuid
+  jobId              String     @map("job_id") @db.Uuid
+  tipo               String
+  payload            Json
+  status             String     @default("pending")
+  tentativas         Int        @default(0)
+  erroResumo         String?    @map("erro_resumo")
+  proximaTentativaEm DateTime   @default(now()) @map("proxima_tentativa_em")
+  processingToken    String?    @map("processing_token") @db.Uuid
+  lockExpiraEm       DateTime?  @map("lock_expira_em")
+  criadoEm           DateTime   @default(now()) @map("criado_em")
+  publicadoEm        DateTime?  @map("publicado_em")
+  job                InsightJob @relation(fields: [jobId], references: [id])
 
-  @@index([publicadoEm, criadoEm])
+  @@index([status, proximaTentativaEm, criadoEm])
   @@map("outbox_eventos")
 }
 

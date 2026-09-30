@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
@@ -27,3 +28,6 @@ export class CreateDisciplinaDto {
   @IsOptional()
   ativo?: boolean;
 }
+=======
+export class CreateDisciplinaDto {}
+>>>>>>> refs/remotes/origin/main
