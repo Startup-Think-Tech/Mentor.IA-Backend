@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import {
   ConflictException,
   Injectable,
@@ -9,25 +8,12 @@ import { CreateConteudoDto } from './dto/create-conteudo.dto';
 import { CreateDisciplinaDto } from './dto/create-disciplina.dto';
 import { UpdateConteudoDto } from './dto/update-conteudo.dto';
 import { UpdateDisciplinaDto } from './dto/update-disciplina.dto';
-=======
-import { Injectable, NotFoundException } from '@nestjs/common';
->>>>>>> refs/remotes/origin/main
 import { DisciplinasRepository } from './disciplinas.repository';
 
 @Injectable()
 export class DisciplinasService {
   constructor(private readonly disciplinasRepository: DisciplinasRepository) {}
 
-<<<<<<< HEAD
-  findAllPublic() {
-    return this.disciplinasRepository.findActiveDisciplinas();
-  }
-
-  async findOnePublic(id: string) {
-    const disciplina =
-      await this.disciplinasRepository.findActiveDisciplinaById(id);
-
-=======
   findAll() {
     return this.disciplinasRepository.findActiveDisciplines();
   }
@@ -35,7 +21,6 @@ export class DisciplinasService {
   async findOne(id: string) {
     const disciplina =
       await this.disciplinasRepository.findActiveDisciplineById(id);
->>>>>>> refs/remotes/origin/main
     if (!disciplina) {
       throw new NotFoundException('Disciplina não encontrada.');
     }
@@ -43,11 +28,11 @@ export class DisciplinasService {
     return disciplina;
   }
 
-<<<<<<< HEAD
-  async findConteudosPublic(id: string) {
-    await this.findOnePublic(id);
-
-    return this.disciplinasRepository.findActiveConteudosByDisciplinaId(id);
+  async findContents(disciplinaId: string) {
+    await this.findOne(disciplinaId);
+    return this.disciplinasRepository.findActiveContentsByDisciplineId(
+      disciplinaId,
+    );
   }
 
   findAllAdmin() {
@@ -77,10 +62,7 @@ export class DisciplinasService {
     }
   }
 
-  async updateDisciplina(
-    id: string,
-    updateDisciplinaDto: UpdateDisciplinaDto,
-  ) {
+  async updateDisciplina(id: string, updateDisciplinaDto: UpdateDisciplinaDto) {
     await this.findOneAdmin(id);
 
     try {
@@ -151,9 +133,8 @@ export class DisciplinasService {
     conteudoId: string,
   ) {
     await this.findOneAdmin(disciplinaId);
-    const conteudo = await this.disciplinasRepository.findConteudoById(
-      conteudoId,
-    );
+    const conteudo =
+      await this.disciplinasRepository.findConteudoById(conteudoId);
 
     if (!conteudo || conteudo.disciplinaId !== disciplinaId) {
       throw new NotFoundException('Conteúdo não encontrado.');
@@ -210,12 +191,5 @@ export class DisciplinasService {
     if (this.disciplinasRepository.isUniqueConstraintError(error)) {
       throw new ConflictException('Disciplina ou conteúdo já cadastrado.');
     }
-=======
-  async findContents(disciplinaId: string) {
-    await this.findOne(disciplinaId);
-    return this.disciplinasRepository.findActiveContentsByDisciplineId(
-      disciplinaId,
-    );
->>>>>>> refs/remotes/origin/main
   }
 }

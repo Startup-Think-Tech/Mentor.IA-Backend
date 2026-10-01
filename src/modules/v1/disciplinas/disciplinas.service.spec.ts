@@ -12,9 +12,9 @@ describe('DisciplinasService', () => {
         {
           provide: DisciplinasRepository,
           useValue: {
-            findActiveDisciplinas: jest.fn(),
-            findActiveDisciplinaById: jest.fn(),
-            findActiveConteudosByDisciplinaId: jest.fn(),
+            findActiveDisciplines: jest.fn(),
+            findActiveDisciplineById: jest.fn(),
+            findActiveContentsByDisciplineId: jest.fn(),
             findAllDisciplinas: jest.fn(),
             findDisciplinaById: jest.fn(),
             createDisciplina: jest.fn(),

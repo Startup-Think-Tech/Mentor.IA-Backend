@@ -16,9 +16,9 @@ describe('DisciplinasController', () => {
         {
           provide: DisciplinasService,
           useValue: {
-            findAllPublic: jest.fn(),
-            findConteudosPublic: jest.fn(),
-            findOnePublic: jest.fn(),
+            findAll: jest.fn(),
+            findContents: jest.fn(),
+            findOne: jest.fn(),
           },
         },
       ],
