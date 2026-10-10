@@ -7,6 +7,8 @@ import { AlunoModule } from './modules/v1/aluno/aluno.module';
 import { AuthModule } from './modules/v1/auth/auth.module';
 import { DashboardModule } from './modules/v1/dashboard/dashboard.module';
 import { DisciplinasModule } from './modules/v1/disciplinas/disciplinas.module';
+import { DesempenhosModule } from './modules/v1/diagnosticos/desempenhos/desempenhos.module';
+import { DiagnosticosModule } from './modules/v1/diagnosticos/diagnosticos.module';
 import { GapsModule } from './modules/v1/gaps/gaps.module';
 import { HealthModule } from './modules/v1/health/health.module';
 import { PrismaModule } from './modules/v1/prisma/prisma.module';
@@ -25,6 +27,8 @@ import { RabbitMqModule } from './modules/v1/rabbitmq/rabbitmq.module';
     HealthModule,
     RabbitMqModule,
     DisciplinasModule,
+    DesempenhosModule,
+    DiagnosticosModule,
     DashboardModule,
     GapsModule,
   ],
