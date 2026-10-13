@@ -2,6 +2,7 @@ import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiExtraModels,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -20,7 +21,7 @@ import {
 import { DisponibilidadeService } from './disponibilidade.service';
 
 @ApiTags('Disponibilidade')
-@ApiBearerAuth()
+@ApiBearerAuth('bearer')
 @ApiExtraModels(DisponibilidadeDiaDto)
 @Controller('alunos/me/disponibilidade')
 @UseGuards(JwtAuthGuard)
@@ -43,7 +44,30 @@ export class DisponibilidadeController {
   }
 
   @Put()
-  @ApiOperation({ summary: 'Substitui a disponibilidade semanal do aluno' })
+  @ApiOperation({
+    summary: 'Substitui a disponibilidade semanal do aluno',
+    description:
+      'Envie exatamente os sete dias (0=domingo, 1=segunda, ..., 6=sábado). Minutos podem ser 0 para dias indisponíveis.',
+  })
+  @ApiBody({
+    type: SubstituirDisponibilidadeDto,
+    examples: {
+      semanaExemplo: {
+        summary: 'Exemplo de semana completa',
+        value: {
+          disponibilidades: [
+            { diaSemana: 0, minutosDisponiveis: 0 },
+            { diaSemana: 1, minutosDisponiveis: 60 },
+            { diaSemana: 2, minutosDisponiveis: 60 },
+            { diaSemana: 3, minutosDisponiveis: 90 },
+            { diaSemana: 4, minutosDisponiveis: 60 },
+            { diaSemana: 5, minutosDisponiveis: 90 },
+            { diaSemana: 6, minutosDisponiveis: 120 },
+          ],
+        },
+      },
+    },
+  })
   @ApiOkResponse({
     description:
       'Disponibilidade atualizada e indicação de eventual recálculo do cronograma ativo.',

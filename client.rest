@@ -1,0 +1,648 @@
+# =====================================================================
+# Mentor.ia Backend - client.rest
+# REST Client (VS Code)
+#
+# Fluxo principal:
+# 1. Health
+# 2. Cadastro
+# 3. Login
+# 4. Perfil
+# 5. Disponibilidade
+# 6. Criar diagnostico
+# 7. Buscar referencias das questoes
+# 8. Buscar questoes na enem.dev
+# 9. Registrar respostas
+# 10. Finalizar diagnostico
+# 11. Consultar resultado
+# 12. Consultar desempenho
+#
+# Swagger:
+# http://127.0.0.1:3001/api/docs
+# =====================================================================
+
+@host = http://127.0.0.1:3001
+@baseUrl = {{host}}/api/v1
+@enemBaseUrl = https://api.enem.dev/v1
+
+@nome = Lucas Teste
+@email = lucas.teste@example.com
+@password = senha-segura
+
+@authToken = {{authenticate.response.body.accessToken}}
+@refreshToken = {{authenticate.response.body.refreshToken}}
+@alunoId = {{authenticate.response.body.user.id}}
+
+@diagnosticoId = {{createDiagnostico.response.body.id}}
+
+@questao01Id = {{getDiagnosticoQuestoes.response.body.$[0].id}}
+@questao02Id = {{getDiagnosticoQuestoes.response.body.$[1].id}}
+@questao03Id = {{getDiagnosticoQuestoes.response.body.$[2].id}}
+@questao04Id = {{getDiagnosticoQuestoes.response.body.$[3].id}}
+@questao05Id = {{getDiagnosticoQuestoes.response.body.$[4].id}}
+@questao06Id = {{getDiagnosticoQuestoes.response.body.$[5].id}}
+@questao07Id = {{getDiagnosticoQuestoes.response.body.$[6].id}}
+@questao08Id = {{getDiagnosticoQuestoes.response.body.$[7].id}}
+@questao09Id = {{getDiagnosticoQuestoes.response.body.$[8].id}}
+@questao10Id = {{getDiagnosticoQuestoes.response.body.$[9].id}}
+@questao11Id = {{getDiagnosticoQuestoes.response.body.$[10].id}}
+@questao12Id = {{getDiagnosticoQuestoes.response.body.$[11].id}}
+@questao13Id = {{getDiagnosticoQuestoes.response.body.$[12].id}}
+@questao14Id = {{getDiagnosticoQuestoes.response.body.$[13].id}}
+@questao15Id = {{getDiagnosticoQuestoes.response.body.$[14].id}}
+@questao16Id = {{getDiagnosticoQuestoes.response.body.$[15].id}}
+@questao17Id = {{getDiagnosticoQuestoes.response.body.$[16].id}}
+@questao18Id = {{getDiagnosticoQuestoes.response.body.$[17].id}}
+@questao19Id = {{getDiagnosticoQuestoes.response.body.$[18].id}}
+@questao20Id = {{getDiagnosticoQuestoes.response.body.$[19].id}}
+
+@questao01Year = {{getDiagnosticoQuestoes.response.body.$[0].year}}
+@questao01Index = {{getDiagnosticoQuestoes.response.body.$[0].index}}
+@questao02Year = {{getDiagnosticoQuestoes.response.body.$[1].year}}
+@questao02Index = {{getDiagnosticoQuestoes.response.body.$[1].index}}
+@questao03Year = {{getDiagnosticoQuestoes.response.body.$[2].year}}
+@questao03Index = {{getDiagnosticoQuestoes.response.body.$[2].index}}
+@questao04Year = {{getDiagnosticoQuestoes.response.body.$[3].year}}
+@questao04Index = {{getDiagnosticoQuestoes.response.body.$[3].index}}
+@questao05Year = {{getDiagnosticoQuestoes.response.body.$[4].year}}
+@questao05Index = {{getDiagnosticoQuestoes.response.body.$[4].index}}
+@questao06Year = {{getDiagnosticoQuestoes.response.body.$[5].year}}
+@questao06Index = {{getDiagnosticoQuestoes.response.body.$[5].index}}
+@questao07Year = {{getDiagnosticoQuestoes.response.body.$[6].year}}
+@questao07Index = {{getDiagnosticoQuestoes.response.body.$[6].index}}
+@questao08Year = {{getDiagnosticoQuestoes.response.body.$[7].year}}
+@questao08Index = {{getDiagnosticoQuestoes.response.body.$[7].index}}
+@questao09Year = {{getDiagnosticoQuestoes.response.body.$[8].year}}
+@questao09Index = {{getDiagnosticoQuestoes.response.body.$[8].index}}
+@questao10Year = {{getDiagnosticoQuestoes.response.body.$[9].year}}
+@questao10Index = {{getDiagnosticoQuestoes.response.body.$[9].index}}
+@questao11Year = {{getDiagnosticoQuestoes.response.body.$[10].year}}
+@questao11Index = {{getDiagnosticoQuestoes.response.body.$[10].index}}
+@questao12Year = {{getDiagnosticoQuestoes.response.body.$[11].year}}
+@questao12Index = {{getDiagnosticoQuestoes.response.body.$[11].index}}
+@questao13Year = {{getDiagnosticoQuestoes.response.body.$[12].year}}
+@questao13Index = {{getDiagnosticoQuestoes.response.body.$[12].index}}
+@questao14Year = {{getDiagnosticoQuestoes.response.body.$[13].year}}
+@questao14Index = {{getDiagnosticoQuestoes.response.body.$[13].index}}
+@questao15Year = {{getDiagnosticoQuestoes.response.body.$[14].year}}
+@questao15Index = {{getDiagnosticoQuestoes.response.body.$[14].index}}
+@questao16Year = {{getDiagnosticoQuestoes.response.body.$[15].year}}
+@questao16Index = {{getDiagnosticoQuestoes.response.body.$[15].index}}
+@questao17Year = {{getDiagnosticoQuestoes.response.body.$[16].year}}
+@questao17Index = {{getDiagnosticoQuestoes.response.body.$[16].index}}
+@questao18Year = {{getDiagnosticoQuestoes.response.body.$[17].year}}
+@questao18Index = {{getDiagnosticoQuestoes.response.body.$[17].index}}
+@questao19Year = {{getDiagnosticoQuestoes.response.body.$[18].year}}
+@questao19Index = {{getDiagnosticoQuestoes.response.body.$[18].index}}
+@questao20Year = {{getDiagnosticoQuestoes.response.body.$[19].year}}
+@questao20Index = {{getDiagnosticoQuestoes.response.body.$[19].index}}
+
+@resposta01Id = {{responderDiagnosticoCompleto.response.body.$.respostas[0].id}}
+
+@disciplinaId = {{listDisciplinas.response.body.$[0].id}}
+@conteudoId = {{listConteudos.response.body.$[0].id}}
+@gapId = {{listGaps.response.body.$[0].id}}
+
+@adminToken = COLE_AQUI_UM_ACCESS_TOKEN_ADMIN
+@adminDisciplinaId = {{adminCreateDisciplina.response.body.id}}
+@adminConteudoId = {{adminCreateConteudo.response.body.id}}
+@resetToken = COLE_AQUI_O_TOKEN_DE_RECUPERACAO
+
+
+# =====================================================================
+# HEALTH
+# =====================================================================
+
+### Health da API e banco
+GET {{baseUrl}}/health
+
+
+# =====================================================================
+# AUTH
+# =====================================================================
+
+### 1. Cadastrar aluno
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "nome": "{{nome}}",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Login
+# @name authenticate
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Consultar identidade autenticada
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{authToken}}
+
+### Renovar tokens
+# @name reAuthenticate
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{authToken}}
+
+### Solicitar recuperacao de senha
+POST {{baseUrl}}/auth/esqueceu-senha
+Content-Type: application/json
+
+{
+  "email": "{{email}}"
+}
+
+### Redefinir senha
+POST {{baseUrl}}/auth/redefinir-senha
+Content-Type: application/json
+
+{
+  "token": "{{resetToken}}",
+  "password": "nova-senha-segura"
+}
+
+
+# =====================================================================
+# ALUNO
+# =====================================================================
+
+### 3. Consultar perfil
+GET {{baseUrl}}/alunos/me
+Authorization: Bearer {{authToken}}
+
+### Atualizar nome
+PATCH {{baseUrl}}/alunos/me
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "nome": "Lucas Chaves"
+}
+
+
+# =====================================================================
+# DISPONIBILIDADE
+# =====================================================================
+
+### 4. Definir disponibilidade semanal
+PUT {{baseUrl}}/alunos/me/disponibilidade
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "disponibilidades": [
+    { "diaSemana": 0, "minutosDisponiveis": 0 },
+    { "diaSemana": 1, "minutosDisponiveis": 60 },
+    { "diaSemana": 2, "minutosDisponiveis": 60 },
+    { "diaSemana": 3, "minutosDisponiveis": 90 },
+    { "diaSemana": 4, "minutosDisponiveis": 60 },
+    { "diaSemana": 5, "minutosDisponiveis": 90 },
+    { "diaSemana": 6, "minutosDisponiveis": 120 }
+  ]
+}
+
+### Consultar disponibilidade semanal
+GET {{baseUrl}}/alunos/me/disponibilidade
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# DISCIPLINAS - ALUNO
+# =====================================================================
+
+### Listar disciplinas ativas
+# @name listDisciplinas
+GET {{baseUrl}}/disciplinas
+Authorization: Bearer {{authToken}}
+
+### Consultar uma disciplina
+GET {{baseUrl}}/disciplinas/{{disciplinaId}}
+Authorization: Bearer {{authToken}}
+
+### Listar conteudos da disciplina
+# @name listConteudos
+GET {{baseUrl}}/disciplinas/{{disciplinaId}}/conteudos
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# DIAGNOSTICO - FLUXO PRINCIPAL
+# =====================================================================
+
+### 5. Criar diagnostico
+# SEM BODY.
+# @name createDiagnostico
+POST {{baseUrl}}/diagnosticos
+Authorization: Bearer {{authToken}}
+
+### Consultar diagnostico atual
+GET {{baseUrl}}/diagnosticos/atual
+Authorization: Bearer {{authToken}}
+
+### Consultar historico de diagnosticos
+GET {{baseUrl}}/diagnosticos/historico
+Authorization: Bearer {{authToken}}
+
+### Consultar diagnostico pelo ID
+GET {{baseUrl}}/diagnosticos/{{diagnosticoId}}
+Authorization: Bearer {{authToken}}
+
+### 6. Obter as 20 referencias das questoes
+# @name getDiagnosticoQuestoes
+GET {{baseUrl}}/diagnosticos/{{diagnosticoId}}/questoes
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# ENEM.DEV - CONTEUDO EXTERNO DAS 20 QUESTOES
+# Execute depois de getDiagnosticoQuestoes.
+# =====================================================================
+
+### ENEM 01
+# @name enem01
+GET {{enemBaseUrl}}/exams/{{questao01Year}}/questions/{{questao01Index}}
+
+### ENEM 02
+# @name enem02
+GET {{enemBaseUrl}}/exams/{{questao02Year}}/questions/{{questao02Index}}
+
+### ENEM 03
+# @name enem03
+GET {{enemBaseUrl}}/exams/{{questao03Year}}/questions/{{questao03Index}}
+
+### ENEM 04
+# @name enem04
+GET {{enemBaseUrl}}/exams/{{questao04Year}}/questions/{{questao04Index}}
+
+### ENEM 05
+# @name enem05
+GET {{enemBaseUrl}}/exams/{{questao05Year}}/questions/{{questao05Index}}
+
+### ENEM 06
+# @name enem06
+GET {{enemBaseUrl}}/exams/{{questao06Year}}/questions/{{questao06Index}}
+
+### ENEM 07
+# @name enem07
+GET {{enemBaseUrl}}/exams/{{questao07Year}}/questions/{{questao07Index}}
+
+### ENEM 08
+# @name enem08
+GET {{enemBaseUrl}}/exams/{{questao08Year}}/questions/{{questao08Index}}
+
+### ENEM 09
+# @name enem09
+GET {{enemBaseUrl}}/exams/{{questao09Year}}/questions/{{questao09Index}}
+
+### ENEM 10
+# @name enem10
+GET {{enemBaseUrl}}/exams/{{questao10Year}}/questions/{{questao10Index}}
+
+### ENEM 11
+# @name enem11
+GET {{enemBaseUrl}}/exams/{{questao11Year}}/questions/{{questao11Index}}
+
+### ENEM 12
+# @name enem12
+GET {{enemBaseUrl}}/exams/{{questao12Year}}/questions/{{questao12Index}}
+
+### ENEM 13
+# @name enem13
+GET {{enemBaseUrl}}/exams/{{questao13Year}}/questions/{{questao13Index}}
+
+### ENEM 14
+# @name enem14
+GET {{enemBaseUrl}}/exams/{{questao14Year}}/questions/{{questao14Index}}
+
+### ENEM 15
+# @name enem15
+GET {{enemBaseUrl}}/exams/{{questao15Year}}/questions/{{questao15Index}}
+
+### ENEM 16
+# @name enem16
+GET {{enemBaseUrl}}/exams/{{questao16Year}}/questions/{{questao16Index}}
+
+### ENEM 17
+# @name enem17
+GET {{enemBaseUrl}}/exams/{{questao17Year}}/questions/{{questao17Index}}
+
+### ENEM 18
+# @name enem18
+GET {{enemBaseUrl}}/exams/{{questao18Year}}/questions/{{questao18Index}}
+
+### ENEM 19
+# @name enem19
+GET {{enemBaseUrl}}/exams/{{questao19Year}}/questions/{{questao19Index}}
+
+### ENEM 20
+# @name enem20
+GET {{enemBaseUrl}}/exams/{{questao20Year}}/questions/{{questao20Index}}
+
+
+# =====================================================================
+# RESPOSTAS DO DIAGNOSTICO
+# =====================================================================
+
+### Exemplo manual de uma resposta
+# Nao execute este request se for usar o POST em lote logo abaixo.
+#
+# POST {{baseUrl}}/diagnosticos/{{diagnosticoId}}/respostas
+# Authorization: Bearer {{authToken}}
+# Content-Type: application/json
+#
+# {
+#   "respostas": [
+#     {
+#       "diagnosticoQuestaoId": "{{questao01Id}}",
+#       "alternativaMarcada": "A",
+#       "acertoInformado": true
+#     }
+#   ]
+# }
+
+### 7. MODO RAPIDO - responder as 20 corretamente com o gabarito da enem.dev
+# Execute os 20 requests ENEM acima antes deste.
+# @name responderDiagnosticoCompleto
+POST {{baseUrl}}/diagnosticos/{{diagnosticoId}}/respostas
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "respostas": [
+    { "diagnosticoQuestaoId": "{{questao01Id}}", "alternativaMarcada": "{{enem01.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao02Id}}", "alternativaMarcada": "{{enem02.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao03Id}}", "alternativaMarcada": "{{enem03.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao04Id}}", "alternativaMarcada": "{{enem04.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao05Id}}", "alternativaMarcada": "{{enem05.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao06Id}}", "alternativaMarcada": "{{enem06.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao07Id}}", "alternativaMarcada": "{{enem07.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao08Id}}", "alternativaMarcada": "{{enem08.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao09Id}}", "alternativaMarcada": "{{enem09.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao10Id}}", "alternativaMarcada": "{{enem10.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao11Id}}", "alternativaMarcada": "{{enem11.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao12Id}}", "alternativaMarcada": "{{enem12.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao13Id}}", "alternativaMarcada": "{{enem13.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao14Id}}", "alternativaMarcada": "{{enem14.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao15Id}}", "alternativaMarcada": "{{enem15.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao16Id}}", "alternativaMarcada": "{{enem16.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao17Id}}", "alternativaMarcada": "{{enem17.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao18Id}}", "alternativaMarcada": "{{enem18.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao19Id}}", "alternativaMarcada": "{{enem19.response.body.$.correctAlternative}}", "acertoInformado": true },
+    { "diagnosticoQuestaoId": "{{questao20Id}}", "alternativaMarcada": "{{enem20.response.body.$.correctAlternative}}", "acertoInformado": true }
+  ]
+}
+
+### Editar a primeira resposta
+# Execute antes de finalizar.
+PATCH {{baseUrl}}/diagnosticos/{{diagnosticoId}}/respostas/{{resposta01Id}}
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "alternativaMarcada": "{{enem01.response.body.$.correctAlternative}}",
+  "acertoInformado": true
+}
+
+
+# =====================================================================
+# FINALIZACAO E RESULTADO
+# =====================================================================
+
+### 8. Finalizar diagnostico
+# SEM BODY. Pode executar novamente para testar idempotencia.
+# @name finalizarDiagnostico
+POST {{baseUrl}}/diagnosticos/{{diagnosticoId}}/finalizar
+Authorization: Bearer {{authToken}}
+
+### 9. Consultar resultado
+# @name getResultadoDiagnostico
+GET {{baseUrl}}/diagnosticos/{{diagnosticoId}}/resultado
+Authorization: Bearer {{authToken}}
+
+### Confirmar que nao existe mais diagnostico atual
+GET {{baseUrl}}/diagnosticos/atual
+Authorization: Bearer {{authToken}}
+
+### Confirmar que o diagnostico entrou no historico
+GET {{baseUrl}}/diagnosticos/historico
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# DESEMPENHO - ALUNO
+# =====================================================================
+
+### 10. Desempenho atual
+GET {{baseUrl}}/diagnosticos/desempenhos
+Authorization: Bearer {{authToken}}
+
+### Desempenho atual filtrado pelo diagnostico
+GET {{baseUrl}}/diagnosticos/desempenhos
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{authToken}}
+
+### Historico de desempenho
+GET {{baseUrl}}/diagnosticos/desempenhos/historico
+Authorization: Bearer {{authToken}}
+
+### Historico filtrado pelo diagnostico
+GET {{baseUrl}}/diagnosticos/desempenhos/historico
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{authToken}}
+
+### Atualizar/listar disciplinas depois da finalizacao
+# @name listDisciplinas
+GET {{baseUrl}}/disciplinas
+Authorization: Bearer {{authToken}}
+
+### Listar conteudos da primeira disciplina
+# @name listConteudos
+GET {{baseUrl}}/disciplinas/{{disciplinaId}}/conteudos
+Authorization: Bearer {{authToken}}
+
+### Desempenho por disciplina
+GET {{baseUrl}}/diagnosticos/desempenhos/disciplinas/{{disciplinaId}}
+Authorization: Bearer {{authToken}}
+
+### Desempenho por disciplina e diagnostico
+GET {{baseUrl}}/diagnosticos/desempenhos/disciplinas/{{disciplinaId}}
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# GAPS
+# As rotas existem, mas a geracao automatica e o proximo passo.
+# =====================================================================
+
+### Gaps atuais
+# @name listGaps
+GET {{baseUrl}}/gaps
+Authorization: Bearer {{authToken}}
+
+### Historico de gaps
+GET {{baseUrl}}/gaps/historico
+Authorization: Bearer {{authToken}}
+
+### Gap por ID
+# Execute apenas se listGaps retornar pelo menos um registro.
+GET {{baseUrl}}/gaps/{{gapId}}
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# DASHBOARD
+# =====================================================================
+
+### Dashboard resumo
+GET {{baseUrl}}/dashboard/resumo
+Authorization: Bearer {{authToken}}
+
+### Dashboard resumo com filtros
+GET {{baseUrl}}/dashboard/resumo
+  ?inicio=2026-10-01T00:00:00.000Z
+  &fim=2026-10-31T23:59:59.999Z
+  &disciplina_id={{disciplinaId}}
+Authorization: Bearer {{authToken}}
+
+### Dashboard historico
+GET {{baseUrl}}/dashboard/historico
+  ?pagina=1
+  &limite=20
+Authorization: Bearer {{authToken}}
+
+### Dashboard historico com filtros
+GET {{baseUrl}}/dashboard/historico
+  ?inicio=2026-10-01T00:00:00.000Z
+  &fim=2026-10-31T23:59:59.999Z
+  &disciplina_id={{disciplinaId}}
+  &pagina=1
+  &limite=20
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# ADMIN - DISCIPLINAS
+# Necessita JWT com papel ADMIN.
+# =====================================================================
+
+### Admin - listar disciplinas
+GET {{baseUrl}}/admin/disciplinas
+Authorization: Bearer {{adminToken}}
+
+### Admin - criar disciplina
+# @name adminCreateDisciplina
+POST {{baseUrl}}/admin/disciplinas
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nome": "Redacao Teste",
+  "codigo": "redacao-teste",
+  "ativo": true
+}
+
+### Admin - consultar disciplina
+GET {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}
+Authorization: Bearer {{adminToken}}
+
+### Admin - atualizar disciplina
+PATCH {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nome": "Redacao",
+  "ativo": true
+}
+
+### Admin - listar conteudos
+GET {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}/conteudos
+Authorization: Bearer {{adminToken}}
+
+### Admin - criar conteudo
+# @name adminCreateConteudo
+POST {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}/conteudos
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nome": "Competencias da Redacao",
+  "ativo": true
+}
+
+### Admin - atualizar conteudo
+PATCH {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}/conteudos/{{adminConteudoId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "nome": "Competencias",
+  "ativo": true
+}
+
+### Admin - inativar conteudo
+DELETE {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}/conteudos/{{adminConteudoId}}
+Authorization: Bearer {{adminToken}}
+
+### Admin - inativar disciplina
+DELETE {{baseUrl}}/admin/disciplinas/{{adminDisciplinaId}}
+Authorization: Bearer {{adminToken}}
+
+
+# =====================================================================
+# ADMIN - DESEMPENHO
+# Necessita JWT ADMIN.
+# =====================================================================
+
+### Admin - desempenho atual do aluno
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos
+Authorization: Bearer {{adminToken}}
+
+### Admin - desempenho atual filtrado
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{adminToken}}
+
+### Admin - historico de desempenho
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos/historico
+Authorization: Bearer {{adminToken}}
+
+### Admin - historico filtrado
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos/historico
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{adminToken}}
+
+### Admin - desempenho por disciplina
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos/disciplinas/{{disciplinaId}}
+Authorization: Bearer {{adminToken}}
+
+### Admin - desempenho por disciplina e diagnostico
+GET {{baseUrl}}/admin/alunos/{{alunoId}}/diagnosticos/desempenhos/disciplinas/{{disciplinaId}}
+  ?diagnostico_id={{diagnosticoId}}
+Authorization: Bearer {{adminToken}}
+
+
+# =====================================================================
+# SWAGGER
+# =====================================================================
+
+### Swagger JSON
+GET {{host}}/api/docs-json
+
+# Interface:
+# http://127.0.0.1:3001/api/docs
