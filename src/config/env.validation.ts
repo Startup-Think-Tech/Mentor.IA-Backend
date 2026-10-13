@@ -12,6 +12,7 @@ export function validateEnv(config: Record<string, unknown>) {
     JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
     JWT_REFRESH_SECRET: Joi.string().min(32).optional(),
     JWT_SECRET: Joi.string().min(32).required(),
+    INSIGHT_ACTIVE_JOB_LIMIT: Joi.number().integer().min(1).default(1),
     NODE_ENV: Joi.string()
       .valid('development', 'production', 'test')
       .default('development'),

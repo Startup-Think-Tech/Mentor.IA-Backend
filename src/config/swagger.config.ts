@@ -41,6 +41,10 @@ export function setupSwagger(app: INestApplication) {
       'Administração de disciplinas e conteúdos. Requer papel ADMIN.',
     )
     .addTag('Dashboard', 'Resumo e histórico acadêmico do aluno autenticado.')
+    .addTag(
+      'Insights',
+      'Geração assíncrona de insights e consulta do estado dos jobs.',
+    )
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
