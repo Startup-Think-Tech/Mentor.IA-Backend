@@ -9,6 +9,7 @@ import { DashboardModule } from './modules/v1/dashboard/dashboard.module';
 import { DisciplinasModule } from './modules/v1/disciplinas/disciplinas.module';
 import { GapsModule } from './modules/v1/gaps/gaps.module';
 import { HealthModule } from './modules/v1/health/health.module';
+import { InsightsModule } from './modules/v1/insights/insights.module';
 import { PrismaModule } from './modules/v1/prisma/prisma.module';
 import { RabbitMqModule } from './modules/v1/rabbitmq/rabbitmq.module';
 
@@ -23,6 +24,7 @@ import { RabbitMqModule } from './modules/v1/rabbitmq/rabbitmq.module';
     AuthModule,
     AlunoModule,
     HealthModule,
+    InsightsModule,
     RabbitMqModule,
     DisciplinasModule,
     DashboardModule,
