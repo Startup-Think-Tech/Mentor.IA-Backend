@@ -4,6 +4,7 @@ export function validateEnv(config: Record<string, unknown>) {
   const schema = Joi.object({
     API_DOCS_PATH: Joi.string().default('api/docs'),
     API_PREFIX: Joi.string().default('api/v1'),
+    CORS_ORIGINS: Joi.string().default('http://localhost:3000,http://localhost:3002'),
     DATABASE_URL: Joi.string()
       .uri({ scheme: ['postgresql', 'postgres'] })
       .required(),
@@ -15,7 +16,7 @@ export function validateEnv(config: Record<string, unknown>) {
       .valid('development', 'production', 'test')
       .default('development'),
     PASSWORD_RESET_TTL_MINUTES: Joi.number().integer().min(1).default(30),
-    PORT: Joi.number().port().default(3001),
+    PORT: Joi.number().port().default(3333),
     RABBITMQ_EXCHANGE: Joi.string().default('mentor.events'),
     RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('mentor.insights'),
     RABBITMQ_URL: Joi.string()

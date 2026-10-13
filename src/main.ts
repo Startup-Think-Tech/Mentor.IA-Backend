@@ -9,6 +9,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.setGlobalPrefix(configService.get<string>('apiPrefix') ?? 'api/v1');
+  app.enableCors({
+    origin: configService.get<string[]>('corsOrigins') ?? [
+      'http://localhost:3000',
+    ],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
@@ -19,6 +24,6 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(configService.get<number>('port') ?? 3000);
+  await app.listen(configService.get<number>('port') ?? 3333);
 }
 void bootstrap();

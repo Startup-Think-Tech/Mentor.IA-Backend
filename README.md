@@ -163,9 +163,9 @@ npm run start:dev
 
 URLs locais:
 
-- API: `http://localhost:3001/api/v1`
-- Swagger: `http://localhost:3001/api/docs`
-- Health: `http://localhost:3001/api/v1/health`
+- API: `http://localhost:3333/api/v1`
+- Swagger: `http://localhost:3333/api/docs`
+- Health: `http://localhost:3333/api/v1/health`
 - PostgreSQL: `localhost:5432`
 - Redis: `localhost:6379`
 - RabbitMQ: `localhost:5672`
@@ -185,7 +185,7 @@ DATABASE_URL="postgresql://mentor_ia:mentor_ia@localhost:5432/mentor_ia?schema=p
 REDIS_URL="redis://localhost:6379"
 RABBITMQ_URL="amqp://mentor_ia:mentor_ia@localhost:5672"
 RABBITMQ_INSIGHTS_QUEUE="insights_queue"
-PORT=3001
+PORT=3333
 ```
 
 Variáveis futuras recomendadas:
@@ -218,7 +218,7 @@ Variáveis validadas atualmente:
 | ------------------------- | ----------- | ------------------------------------------- |
 | `DATABASE_URL`            | Sim         | -                                           |
 | `NODE_ENV`                | Não         | `development`                               |
-| `PORT`                    | Não         | `3001`                                      |
+| `PORT`                    | Não         | `3333`                                      |
 | `API_PREFIX`              | Não         | `api/v1`                                    |
 | `API_DOCS_PATH`           | Não         | `api/docs`                                  |
 | `SWAGGER_ENABLED`         | Não         | `true`                                      |
