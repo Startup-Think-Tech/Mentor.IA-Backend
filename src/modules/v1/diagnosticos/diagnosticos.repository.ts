@@ -5,6 +5,7 @@ import {
   TipoOrigemDesempenho,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { calcularGap } from '../gaps/gap-calculator';
 import type { DiagnosticoQuestionReference } from './diagnostico-reference-pool';
 import {
   ENEM_DISCIPLINE_METADATA,
@@ -437,8 +438,15 @@ export class DiagnosticosRepository {
         groups.set(key, group);
       }
 
+      const gruposComCalculo = [...groups.values()].map((group) => ({
+        group,
+        calculo: calcularGap((group.acertos / group.totalQuestoes) * 100),
+      }));
+
+      // Desempenhos e gaps devem ser persistidos juntos, antes de finalizar.
+      // O lock e o status FINALIZADO tornam uma segunda finalizacao idempotente.
       await transaction.registroDesempenho.createMany({
-        data: [...groups.values()].map((group) => ({
+        data: gruposComCalculo.map(({ group, calculo }) => ({
           alunoId,
           diagnosticoId,
           disciplinaId: group.disciplinaId,
@@ -446,10 +454,21 @@ export class DiagnosticosRepository {
           tipoOrigem: TipoOrigemDesempenho.DIAGNOSTICO,
           totalQuestoes: group.totalQuestoes,
           acertos: group.acertos,
-          percentual: new Prisma.Decimal(
-            ((group.acertos / group.totalQuestoes) * 100).toFixed(2),
-          ),
+          percentual: new Prisma.Decimal(calculo.desempenho),
           correcaoVerificada: group.correcaoVerificada,
+        })),
+      });
+
+      await transaction.gap.createMany({
+        data: gruposComCalculo.map(({ group, calculo }) => ({
+          alunoId,
+          disciplinaId: group.disciplinaId,
+          conteudoId: group.conteudoId,
+          desempenho: new Prisma.Decimal(calculo.desempenho),
+          pontuacaoGap: new Prisma.Decimal(calculo.pontuacaoGap),
+          pontuacaoUrgencia: new Prisma.Decimal(calculo.pontuacaoUrgencia),
+          pontuacaoPrioridade: new Prisma.Decimal(calculo.pontuacaoPrioridade),
+          nivelPrioridade: calculo.nivelPrioridade,
         })),
       });
 

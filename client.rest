@@ -15,6 +15,15 @@
 # 10. Finalizar diagnostico
 # 11. Consultar resultado
 # 12. Consultar desempenho
+# 13. Consultar gaps calculados
+# 14. Gerar e consultar cronograma
+# 15. Recalcular cronograma (opcional)
+# 16. Consultar insights (opcional)
+#
+# IMPORTANTE: para gerar sessoes de estudo, o diagnostico precisa
+# produzir pelo menos um gap com prioridade positiva. No lote de 20
+# acertos abaixo, TODOS os gaps ficam em zero e a geracao retorna 409.
+# Para testar o cronograma, informe alguns erros reais no diagnostico.
 #
 # Swagger:
 # http://127.0.0.1:3001/api/docs
@@ -101,6 +110,15 @@
 @disciplinaId = {{listDisciplinas.response.body.$[0].id}}
 @conteudoId = {{listConteudos.response.body.$[0].id}}
 @gapId = {{listGaps.response.body.$[0].id}}
+
+# IDs disponiveis apos executar as requisicoes correspondentes.
+@cronogramaId = {{gerarCronograma.response.body.id}}
+@cronogramaRecalculadoId = {{recalcularCronograma.response.body.id}}
+@sessaoEstudoId = {{listarSessoesPendentes.response.body.$[0].id}}
+@revisaoId = {{listarRevisoesPendentes.response.body.$[0].id}}
+@insightJobId = {{gerarInsight.response.body.job_id}}
+@insightId = {{listarInsights.response.body.$[0].id}}
+@insightIdempotencyKey = insight-teste-001
 
 @adminToken = COLE_AQUI_UM_ACCESS_TOKEN_ADMIN
 @adminDisciplinaId = {{adminCreateDisciplina.response.body.id}}
@@ -225,7 +243,7 @@ Authorization: Bearer {{authToken}}
 # =====================================================================
 
 ### Listar disciplinas ativas
-# @name listDisciplinas
+# @name listDisciplinasAntesDiagnostico
 GET {{baseUrl}}/disciplinas
 Authorization: Bearer {{authToken}}
 
@@ -234,7 +252,7 @@ GET {{baseUrl}}/disciplinas/{{disciplinaId}}
 Authorization: Bearer {{authToken}}
 
 ### Listar conteudos da disciplina
-# @name listConteudos
+# @name listConteudosAntesDiagnostico
 GET {{baseUrl}}/disciplinas/{{disciplinaId}}/conteudos
 Authorization: Bearer {{authToken}}
 
@@ -486,7 +504,11 @@ Authorization: Bearer {{authToken}}
 
 # =====================================================================
 # GAPS
-# As rotas existem, mas a geracao automatica e o proximo passo.
+# Gaps sao calculados automaticamente ao finalizar um diagnostico.
+# O historico conserva snapshots anteriores; o GET /gaps retorna os atuais.
+# Diagnosticos concluidos antes da implementacao nao sao recalculados.
+# ATENCAO: se todas as 20 respostas estiverem corretas, os gaps serao zero,
+# e a geracao do cronograma nao tera sessoes de estudo para planejar.
 # =====================================================================
 
 ### Gaps atuais
@@ -501,6 +523,191 @@ Authorization: Bearer {{authToken}}
 ### Gap por ID
 # Execute apenas se listGaps retornar pelo menos um registro.
 GET {{baseUrl}}/gaps/{{gapId}}
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# CRONOGRAMAS - ALUNO
+# Execute apos finalizar o diagnostico e consultar os gaps.
+# Exige disponibilidade >= 30 minutos em ao menos um dia e algum gap
+# com prioridade positiva. Se ja houver cronograma ATIVO, gerar retorna
+# 409: nesse caso use o endpoint recalcular.
+# O backend usa inicio = amanha UTC, se dataInicio nao for informado.
+# =====================================================================
+
+### 13. Gerar cronograma inicial de 14 dias
+# @name gerarCronograma
+POST {{baseUrl}}/cronogramas/gerar
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "dias": 14
+}
+
+### Consultar cronograma ativo
+# @name consultarCronogramaAtual
+GET {{baseUrl}}/cronogramas/atual
+Authorization: Bearer {{authToken}}
+
+### Consultar cronograma gerado por ID
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}
+Authorization: Bearer {{authToken}}
+
+### Listar historico de cronogramas (inclusive o ativo)
+GET {{baseUrl}}/cronogramas/historico
+Authorization: Bearer {{authToken}}
+
+### 14. Recalcular cronograma ativo
+# Execute somente depois de gerar. A operacao substitui o plano ativo,
+# preserva atividades concluidas/perdidas e cancela futuras pendentes.
+# @name recalcularCronograma
+POST {{baseUrl}}/cronogramas/recalcular
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "dias": 14
+}
+
+### Consultar o cronograma recalculado
+GET {{baseUrl}}/cronogramas/{{cronogramaRecalculadoId}}
+Authorization: Bearer {{authToken}}
+
+### Conferir cronograma original no historico
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}
+Authorization: Bearer {{authToken}}
+
+# Opcional: gerar com dataInicio explicita (YYYY-MM-DD, amanha UTC
+# ou posterior). Atualize a data antes de usar. Nao execute se ja
+# houver cronograma ativo, pois recebera HTTP 409.
+#
+# POST {{baseUrl}}/cronogramas/gerar
+# Authorization: Bearer {{authToken}}
+# Content-Type: application/json
+#
+# {
+#   "dias": 7,
+#   "dataInicio": "2026-11-01"
+# }
+
+
+# =====================================================================
+# SESSOES DE ESTUDO - ALUNO
+# Execute apos gerar o cronograma. O motor usa dias UTC e horario tecnico
+# de 12h UTC. Concluir/perder nao aceita sessoes de um dia futuro.
+# Sessoes de REVISAO dependem do modulo de resultados de revisao para
+# serem concluidas; marcar como perdida continua permitido.
+# =====================================================================
+
+### Listar sessoes de estudo
+# @name listarSessoesEstudo
+GET {{baseUrl}}/sessoes-estudo
+Authorization: Bearer {{authToken}}
+
+### Listar sessoes pendentes do cronograma inicial
+# @name listarSessoesPendentes
+GET {{baseUrl}}/sessoes-estudo?cronogramaId={{cronogramaId}}&status=PENDENTE&limite=50&offset=0
+Authorization: Bearer {{authToken}}
+
+### Listar sessoes de hoje (UTC)
+# @name listarSessoesHoje
+GET {{baseUrl}}/sessoes-estudo/hoje
+Authorization: Bearer {{authToken}}
+
+### Consultar a primeira sessao retornada pelo filtro
+# Execute apos listarSessoesPendentes.
+# @name consultarSessaoEstudo
+GET {{baseUrl}}/sessoes-estudo/{{sessaoEstudoId}}
+Authorization: Bearer {{authToken}}
+
+### Concluir sessao pendente - execute no dia agendado ou posteriormente
+# Nao use sobre sessao de revisao; registre o resultado da revisao depois.
+POST {{baseUrl}}/sessoes-estudo/{{sessaoEstudoId}}/concluir
+Authorization: Bearer {{authToken}}
+
+### Marcar sessao como perdida - alternativa ao POST concluir
+# Se ja concluiu a mesma sessao, este request retorna HTTP 409.
+POST {{baseUrl}}/sessoes-estudo/{{sessaoEstudoId}}/perder
+Authorization: Bearer {{authToken}}
+
+
+# =====================================================================
+# REVISOES ESPACADAS - ALUNO
+# Uma sessao de ESTUDO concluida cria uma revisao para o dia seguinte.
+# O recalculo do cronograma encaixa revisoes pendentes entre as sessoes,
+# respeitando disponibilidade, prioridade e limite diario.
+# Revisao deve estar vencida ou prevista para hoje (UTC) para ter
+# resultado registrado. ERROU => 1 dia; DIFICIL => mantem intervalo;
+# BOM/FACIL => avanca 1,3,7,14,30 dias.
+# =====================================================================
+
+### Listar todas as revisoes do cronograma ativo
+# @name listarRevisoes
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes
+Authorization: Bearer {{authToken}}
+
+### Listar revisoes pendentes
+# @name listarRevisoesPendentes
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes/pendentes
+Authorization: Bearer {{authToken}}
+
+### Listar revisoes atrasadas
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes/atrasadas
+Authorization: Bearer {{authToken}}
+
+### Historico de revisoes concluidas e canceladas
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes/historico
+Authorization: Bearer {{authToken}}
+
+### Consultar revisao por ID
+# Execute apos listarRevisoesPendentes e ter ao menos uma revisao.
+GET {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes/{{revisaoId}}
+Authorization: Bearer {{authToken}}
+
+### Registrar resultado da revisao
+# @name registrarResultadoRevisao
+# Execute somente na data prevista ou apos ela (UTC).
+# Alternativas: ERROU, DIFICIL, BOM, FACIL.
+POST {{baseUrl}}/cronogramas/{{cronogramaId}}/revisoes/{{revisaoId}}/resultado
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "resultado": "BOM"
+}
+
+
+# =====================================================================
+# INSIGHTS ASSINCRONOS - ALUNO
+# O POST cria um job duravel e responde 202; nao gera texto da IA
+# sincronicamente. O processamento requer worker/consumer operacional.
+# Use Idempotency-Key unica por pedido; repetir a mesma chave e body
+# reutiliza o job, nao cria outro.
+# =====================================================================
+
+### 15. Solicitar geracao assincrona de insight
+# @name gerarInsight
+POST {{baseUrl}}/insights/gerar
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+Idempotency-Key: {{insightIdempotencyKey}}
+
+{}
+
+### Consultar status do job
+# @name consultarInsightJob
+GET {{baseUrl}}/insights/jobs/{{insightJobId}}
+Authorization: Bearer {{authToken}}
+
+### Listar insights disponiveis
+# @name listarInsights
+GET {{baseUrl}}/insights
+Authorization: Bearer {{authToken}}
+
+### Consultar um insight persistido
+# Execute somente se listarInsights retornar pelo menos um resultado.
+GET {{baseUrl}}/insights/{{insightId}}
 Authorization: Bearer {{authToken}}
 
 

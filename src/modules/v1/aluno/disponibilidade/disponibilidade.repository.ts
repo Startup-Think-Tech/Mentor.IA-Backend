@@ -1,6 +1,7 @@
 import { CronogramaStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { recalcularSessoesFuturas } from '../../cronogramas/cronograma-adaptativo';
 
 type DisponibilidadeSemanal = {
   diaSemana: number;
@@ -30,6 +31,9 @@ export class DisponibilidadeRepository {
     disponibilidades: DisponibilidadeSemanal[],
   ) {
     return this.prisma.$transaction(async (transaction) => {
+      await transaction.$executeRaw`
+        SELECT pg_advisory_xact_lock(hashtextextended(${alunoId}, 0))
+      `;
       const aluno = await transaction.aluno.findFirst({
         where: { id: alunoId, excluidoEm: null },
         select: { id: true },
@@ -67,9 +71,16 @@ export class DisponibilidadeRepository {
           })
         : null;
 
+      const recalculo =
+        mudou && cronogramaAtivo
+          ? await recalcularSessoesFuturas(transaction, alunoId)
+          : null;
+
       return {
         disponibilidades,
-        cronogramaPrecisaRecalculo: cronogramaAtivo !== null,
+        cronogramaPrecisaRecalculo:
+          cronogramaAtivo !== null && !recalculo?.recalculado,
+        cronogramaRecalculado: recalculo?.recalculado ?? false,
       };
     });
   }

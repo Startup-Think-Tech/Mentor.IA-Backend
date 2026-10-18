@@ -4,7 +4,9 @@ export function validateEnv(config: Record<string, unknown>) {
   const schema = Joi.object({
     API_DOCS_PATH: Joi.string().default('api/docs'),
     API_PREFIX: Joi.string().default('api/v1'),
-    CORS_ORIGINS: Joi.string().default('http://localhost:3000,http://localhost:3002'),
+    CORS_ORIGINS: Joi.string().default(
+      'http://localhost:3000,http://localhost:3002',
+    ),
     DATABASE_URL: Joi.string()
       .uri({ scheme: ['postgresql', 'postgres'] })
       .required(),
@@ -13,6 +15,16 @@ export function validateEnv(config: Record<string, unknown>) {
     JWT_REFRESH_SECRET: Joi.string().min(32).optional(),
     JWT_SECRET: Joi.string().min(32).required(),
     INSIGHT_ACTIVE_JOB_LIMIT: Joi.number().integer().min(1).default(1),
+    INSIGHT_PROCESSING_ENABLED: Joi.boolean()
+      .truthy('true')
+      .falsy('false')
+      .default(false),
+    INSIGHT_AI_URL: Joi.string()
+      .uri({ scheme: ['http', 'https'] })
+      .allow('')
+      .optional(),
+    INSIGHT_AI_MODEL: Joi.string().allow('').optional(),
+    INSIGHT_AI_API_KEY: Joi.string().allow('').optional(),
     NODE_ENV: Joi.string()
       .valid('development', 'production', 'test')
       .default('development'),

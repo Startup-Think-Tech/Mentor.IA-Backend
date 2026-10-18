@@ -302,6 +302,14 @@ Urgência = 0 a 100
 Prioridade = (Gap * 0.70) + (Urgência * 0.30)
 ```
 
+No diagnóstico inicial, enquanto não houver dados temporais de revisões ou
+prazos, a urgência utiliza provisoriamente a pontuação do próprio gap.
+Assim, urgência = gap e prioridade = gap nessa etapa. O cálculo fica isolado
+em `src/modules/v1/gaps/gap-calculator.ts` para receber uma urgência real
+futuramente. A regra de prioridade mínima ALTA para desempenho inferior a 50%
+continua obrigatória. A finalização grava desempenho e gaps na mesma transação,
+preserva os snapshots históricos e não duplica registros se repetida.
+
 Faixas:
 
 | Pontuação | Nível   |
@@ -355,7 +363,62 @@ Desempate de prioridade:
 4. Maior quantidade de revisões pendentes.
 5. Identificador estável da disciplina.
 
+### Recálculo adaptativo automático
+
+Ao concluir ou perder uma sessão, registrar o resultado de uma revisão ou
+alterar a disponibilidade semanal, o backend reorganiza automaticamente
+somente as sessões PENDENTES a partir do próximo dia UTC, dentro do período
+do cronograma ATIVO. Sessões de hoje e passadas, assim como concluídas,
+perdidas e canceladas, permanecem no histórico. O cronograma conserva seu
+ID; não é criada uma versão nova a cada evento.
+
+O motor considera gaps atuais, disponibilidade, revisões pendentes e
+um ajuste de prioridade dos últimos 14 dias (+10 por sessão perdida,
+-5 por sessão concluída, limitado a 1-100 para gaps positivos). O ajuste
+não modifica os gaps persistidos. O cálculo ocorre na mesma transação
+da operação de origem, sob advisory lock por aluno, evitando atualizações
+parciais. Se não restar disponibilidade, cancela sessões futuras
+pendentes sem criar novas. Não prolonga automaticamente o prazo do plano.
+
+### Implementação do cronograma (MVP)
+
+O módulo `src/modules/v1/cronogramas` oferece `POST /cronogramas/gerar`,
+`POST /cronogramas/recalcular`, `GET /cronogramas/atual`,
+`GET /cronogramas/historico` e `GET /cronogramas/:id`. Todas as rotas
+utilizam o aluno autenticado. O body de geração e recálculo aceita
+`dias` (7 a 28, padrão 14) e `dataInicio` (YYYY-MM-DD, padrão amanhã UTC).
+
+Cada sessão possui 30 minutos, com até quatro sessões por dia e duas por
+disciplina. A alocação de estudo usa prioridades dos gaps mais recentes,
+com rodízio ponderado para evitar concentrar todos os blocos em um único
+conteúdo. Revisões vencidas existentes têm precedência; o recálculo copia
+revisões ainda pendentes para o novo plano. O banco mantém o plano anterior,
+cancela apenas suas sessões futuras pendentes e preserva sessões concluídas
+ou perdidas. A criação rejeita um segundo plano ativo; nesse caso use
+`/cronogramas/recalcular`.
+
+**Limitação atual:** a disponibilidade contém somente os minutos por dia,
+sem horários preferidos nem fuso. Portanto, o agendamento usa as 12h UTC
+como referência técnica e os blocos consecutivos de 30 minutos. A interface
+não deve exibir isso como horário escolhido pelo estudante; o agendamento
+por janela de horário depende da futura evolução da disponibilidade.
+
 ## Insights Com IA
+
+Pipeline de processamento assíncrono: ao criar um job, o banco grava um
+outbox. Com `INSIGHT_PROCESSING_ENABLED=true`, o serviço publica eventos
+`insight.requested` em RabbitMQ e o consumidor da mesma aplicação NestJS
+processa o job, consulta os gaps atuais, chama um endpoint compatível com
+Chat Completions e persiste o texto do insight. O dispatcher faz retry
+com backoff em falhas de publicação. A API HTTP continua respondendo 202.
+
+Para habilitar, configure `INSIGHT_AI_URL` (URL completa do endpoint
+chat completions), `INSIGHT_AI_MODEL` e `INSIGHT_AI_API_KEY`, além da
+conexão RabbitMQ (`RABBITMQ_URL` e `RABBITMQ_INSIGHTS_QUEUE`).
+O serviço permanece desabilitado por padrão, sem alegar sucesso de IA
+na ausência de provedor. A integração com RabbitMQ, PostgreSQL e
+provedor real requer validação E2E antes de produção.
+
 
 A IA atua como camada complementar, não como motor de planejamento.
 
@@ -516,6 +579,21 @@ Todas as rotas internas usam prefixo `/api/v1`. A documentação OpenAPI fica fo
 
 ### Sessões De Estudo
 
+As rotas do aluno (`GET /sessoes-estudo`, `GET /sessoes-estudo/hoje`,
+`GET /sessoes-estudo/:id`, `POST /sessoes-estudo/:id/concluir` e
+`POST /sessoes-estudo/:id/perder`) estão implementadas. A listagem
+suporta `cronogramaId`, `status`, `tipo`, `limite` (até 100) e `offset`.
+Todos os recursos são restritos ao aluno autenticado. A consulta "hoje"
+utiliza o dia UTC, em alinhamento ao agendamento técnico do MVP.
+
+Conclusão/perda só pode ocorrer no dia agendado ou posteriormente,
+sempre partindo de `PENDENTE`; repetir a mesma ação é idempotente e
+uma alteração incompatível retorna 409. Concluir grava `concluidoEm`.
+Sessões de revisão ainda exigem o módulo de resultados de revisão para
+serem concluídas; é possível marcá-las como perdidas. A operação usa
+transação e o mesmo lock por aluno utilizado no recálculo do cronograma,
+protegendo o histórico contra condições de corrida.
+
 | Método | Rota                                                 | Acesso |
 | ------ | ---------------------------------------------------- | ------ |
 | GET    | `/sessoes-estudo`                                    | Aluno  |
@@ -532,6 +610,24 @@ Todas as rotas internas usam prefixo `/api/v1`. A documentação OpenAPI fica fo
 | POST   | `/admin/alunos/:alunoId/sessoes-estudo/:id/perder`   | Admin  |
 
 ### Revisões
+
+O módulo de revisões espaçadas está implementado no caminho
+`src/modules/v1/revisoes` com rotas autenticadas de listagem,
+pendentes, atrasadas, histórico, detalhe e registro de resultados.
+Concluir uma sessão de ESTUDO inicia a primeira revisão para o dia
+seguinte, desde que exista cronograma ativo e nenhuma outra revisão
+pendente do mesmo conteúdo; sessões e revisões já concluídas não são
+apagadas. Recalcular o cronograma encaixa as revisões pendentes na
+capacidade semanal do aluno.
+
+Os intervalos são `1 -> 3 -> 7 -> 14 -> 30` dias. O resultado
+`ERROU` volta a 1 dia, `DIFICIL` mantém o intervalo e `BOM`/`FACIL`
+avança um nível até o máximo de 30. Registrar o resultado conclui
+atomicamente a revisão e sua sessão associada (quando existir) e cria
+a próxima revisão. Resultados só são aceitos na data prevista ou após
+ela, conforme dia UTC, e não em cronogramas substituídos. A mesma
+requisição repetida não deve gerar outro ciclo; um resultado diferente
+sobre revisão concluída é conflitante.
 
 | Método | Rota                                                      | Acesso |
 | ------ | --------------------------------------------------------- | ------ |
