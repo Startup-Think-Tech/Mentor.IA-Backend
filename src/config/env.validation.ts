@@ -38,7 +38,7 @@ export function validateEnv(config: Record<string, unknown>) {
     POSTGRES_PORT: Joi.number().port().optional(),
     POSTGRES_USER: Joi.string().optional(),
     RABBITMQ_EXCHANGE: Joi.string().default('mentor.events'),
-    RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('mentor.insights'),
+    RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('insights_queue'),
     RABBITMQ_URL: Joi.string()
       .uri({ scheme: ['amqp', 'amqps'] })
       .default('amqp://mentor:mentor@localhost:5672'),
