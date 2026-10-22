@@ -26,6 +26,12 @@ type EnemQuestion = {
 
 @Injectable()
 export class EnemQuestionsService {
+  private readonly questionCache = new Map<string, EnemQuestion>();
+  private readonly pendingQuestionRequests = new Map<
+    string,
+    Promise<EnemQuestion>
+  >();
+
   async getPublicQuestion(reference: DiagnosticoQuestaoRecord) {
     const question = await this.fetchQuestion(reference);
 
@@ -57,24 +63,61 @@ export class EnemQuestionsService {
 
   private async fetchQuestion(reference: DiagnosticoQuestaoRecord) {
     const sourceQuestion = this.getSourceQuestion(reference);
-    const response = await fetch(
-      `https://api.enem.dev/v1/exams/${sourceQuestion.year}/questions/${sourceQuestion.index}`,
-      { signal: AbortSignal.timeout(10_000) },
+    const cacheKey = `${sourceQuestion.year}:${sourceQuestion.index}`;
+    const cachedQuestion = this.questionCache.get(cacheKey);
+    if (cachedQuestion) return cachedQuestion;
+
+    const pendingRequest = this.pendingQuestionRequests.get(cacheKey);
+    if (pendingRequest) return pendingRequest;
+
+    const request = this.fetchQuestionFromSource(sourceQuestion, cacheKey);
+    this.pendingQuestionRequests.set(cacheKey, request);
+
+    try {
+      return await request;
+    } finally {
+      this.pendingQuestionRequests.delete(cacheKey);
+    }
+  }
+
+  private async fetchQuestionFromSource(
+    sourceQuestion: { year: number; index: number },
+    cacheKey: string,
+  ) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetch(
+          `https://api.enem.dev/v1/exams/${sourceQuestion.year}/questions/${sourceQuestion.index}`,
+          { signal: AbortSignal.timeout(15_000) },
+        );
+        if (!response.ok) {
+          if (response.status >= 500 && attempt === 0) continue;
+          throw new BadGatewayException(
+            'Não foi possível carregar a questão do ENEM.',
+          );
+        }
+
+        const payload: unknown = await response.json();
+        if (!this.isEnemQuestion(payload)) {
+          throw new BadGatewayException(
+            'A questão do ENEM retornou em formato inválido.',
+          );
+        }
+
+        this.questionCache.set(cacheKey, payload);
+        return payload;
+      } catch (error) {
+        if (error instanceof BadGatewayException || attempt === 1) {
+          throw new BadGatewayException(
+            'Não foi possível carregar a questão do ENEM.',
+          );
+        }
+      }
+    }
+
+    throw new BadGatewayException(
+      'Não foi possível carregar a questão do ENEM.',
     );
-    if (!response.ok) {
-      throw new BadGatewayException(
-        'Não foi possível carregar a questão do ENEM.',
-      );
-    }
-
-    const payload: unknown = await response.json();
-    if (!this.isEnemQuestion(payload)) {
-      throw new BadGatewayException(
-        'A questão do ENEM retornou em formato inválido.',
-      );
-    }
-
-    return payload;
   }
 
   private getSourceQuestion(reference: DiagnosticoQuestaoRecord) {

@@ -24,7 +24,11 @@ const enemQuestion = {
 };
 
 describe('EnemQuestionsService', () => {
-  const service = new EnemQuestionsService();
+  let service: EnemQuestionsService;
+
+  beforeEach(() => {
+    service = new EnemQuestionsService();
+  });
 
   afterEach(() => {
     jest.restoreAllMocks();
@@ -68,6 +72,33 @@ describe('EnemQuestionsService', () => {
     await expect(service.isAlternativeCorrect(reference, 'A')).resolves.toBe(
       false,
     );
+  });
+
+  it('reutiliza a questão carregada ao conferir a resposta', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(enemQuestion),
+    } as Response);
+
+    await service.getPublicQuestion(reference);
+    await service.isAlternativeCorrect(reference, 'B');
+
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('repete uma falha temporária ao consultar a fonte do ENEM', async () => {
+    jest
+      .spyOn(global, 'fetch')
+      .mockRejectedValueOnce(new DOMException('Timeout', 'TimeoutError'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(enemQuestion),
+      } as Response);
+
+    await expect(service.getPublicQuestion(reference)).resolves.toMatchObject({
+      id: reference.id,
+    });
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
   it('preserva uma alternativa visual hospedada pelo ENEM', async () => {
