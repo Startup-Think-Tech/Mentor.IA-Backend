@@ -140,4 +140,32 @@ describe('EnemQuestionsService', () => {
       ],
     });
   });
+
+  it('substitui a questão 132 incompleta por uma questão válida da mesma área', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...enemQuestion, index: 131 }),
+    } as Response);
+
+    await service.getPublicQuestion({ ...reference, questionIndex: 132 });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://api.enem.dev/v1/exams/2023/questions/131',
+      expect.anything(),
+    );
+  });
+
+  it('substitui a questão 141 sem contexto por uma questão completa', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ ...enemQuestion, index: 143 }),
+    } as Response);
+
+    await service.getPublicQuestion({ ...reference, questionIndex: 141 });
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://api.enem.dev/v1/exams/2023/questions/143',
+      expect.anything(),
+    );
+  });
 });

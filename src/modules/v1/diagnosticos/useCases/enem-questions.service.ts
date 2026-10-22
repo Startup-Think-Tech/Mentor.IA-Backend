@@ -2,6 +2,12 @@ import { BadGatewayException, Injectable } from '@nestjs/common';
 import type { DiagnosticoQuestaoRecord } from '../diagnosticos.repository';
 import { getEnemDisciplineByQuestionIndex } from './enem-discipline';
 
+const sourceQuestionFallbacks: Record<string, { year: number; index: number }> =
+  {
+    '2023:132': { year: 2023, index: 131 },
+    '2023:141': { year: 2023, index: 143 },
+  };
+
 type EnemAlternative = {
   letter: string;
   text: string | null;
@@ -50,8 +56,9 @@ export class EnemQuestionsService {
   }
 
   private async fetchQuestion(reference: DiagnosticoQuestaoRecord) {
+    const sourceQuestion = this.getSourceQuestion(reference);
     const response = await fetch(
-      `https://api.enem.dev/v1/exams/${reference.questionYear}/questions/${reference.questionIndex}`,
+      `https://api.enem.dev/v1/exams/${sourceQuestion.year}/questions/${sourceQuestion.index}`,
       { signal: AbortSignal.timeout(10_000) },
     );
     if (!response.ok) {
@@ -68,6 +75,16 @@ export class EnemQuestionsService {
     }
 
     return payload;
+  }
+
+  private getSourceQuestion(reference: DiagnosticoQuestaoRecord) {
+    const fallback =
+      sourceQuestionFallbacks[
+        `${reference.questionYear}:${reference.questionIndex}`
+      ];
+    if (fallback) return fallback;
+
+    return { year: reference.questionYear, index: reference.questionIndex };
   }
 
   private isEnemQuestion(payload: unknown): payload is EnemQuestion {

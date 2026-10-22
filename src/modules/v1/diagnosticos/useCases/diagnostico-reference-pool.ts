@@ -5,7 +5,7 @@ export type DiagnosticoQuestionReference = {
 };
 
 const ENEM_2023_DIAGNOSTICO_INDEXES = [
-  6, 15, 24, 33, 42, 51, 60, 69, 78, 87, 96, 105, 114, 123, 132, 141, 150, 159,
+  6, 15, 24, 33, 42, 51, 60, 69, 78, 87, 96, 105, 114, 123, 131, 143, 150, 159,
   168, 177,
 ] as const;
 
