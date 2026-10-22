@@ -10,6 +10,9 @@ export function validateEnv(config: Record<string, unknown>) {
     DATABASE_URL: Joi.string()
       .uri({ scheme: ['postgresql', 'postgres'] })
       .required(),
+    DATABASE_URL_DOCKER: Joi.string()
+      .uri({ scheme: ['postgresql', 'postgres'] })
+      .optional(),
     JWT_EXPIRES_IN: Joi.string().default('1d'),
     JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
     JWT_REFRESH_SECRET: Joi.string().min(32).optional(),
@@ -30,11 +33,22 @@ export function validateEnv(config: Record<string, unknown>) {
       .default('development'),
     PASSWORD_RESET_TTL_MINUTES: Joi.number().integer().min(1).default(30),
     PORT: Joi.number().port().default(3333),
+    POSTGRES_DB: Joi.string().optional(),
+    POSTGRES_PASSWORD: Joi.string().optional(),
+    POSTGRES_PORT: Joi.number().port().optional(),
+    POSTGRES_USER: Joi.string().optional(),
     RABBITMQ_EXCHANGE: Joi.string().default('mentor.events'),
     RABBITMQ_INSIGHTS_QUEUE: Joi.string().default('mentor.insights'),
     RABBITMQ_URL: Joi.string()
       .uri({ scheme: ['amqp', 'amqps'] })
       .default('amqp://mentor:mentor@localhost:5672'),
+    RABBITMQ_URL_DOCKER: Joi.string()
+      .uri({ scheme: ['amqp', 'amqps'] })
+      .optional(),
+    RABBITMQ_MANAGEMENT_PORT: Joi.number().port().optional(),
+    RABBITMQ_PASSWORD: Joi.string().optional(),
+    RABBITMQ_PORT: Joi.number().port().optional(),
+    RABBITMQ_USER: Joi.string().optional(),
     REDIS_URL: Joi.string()
       .uri({ scheme: ['redis', 'rediss'] })
       .optional(),

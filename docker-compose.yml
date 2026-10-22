@@ -1,0 +1,75 @@
+services:
+  api:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npm run prisma:generate && npx prisma db push && npm run start:dev"
+    environment:
+      NODE_ENV: ${NODE_ENV}
+      PORT: ${PORT}
+      API_PREFIX: ${API_PREFIX}
+      API_DOCS_PATH: ${API_DOCS_PATH}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED}
+      DATABASE_URL: ${DATABASE_URL_DOCKER}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+      PASSWORD_RESET_TTL_MINUTES: ${PASSWORD_RESET_TTL_MINUTES}
+      RABBITMQ_URL: ${RABBITMQ_URL_DOCKER}
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE}
+      RABBITMQ_INSIGHTS_QUEUE: ${RABBITMQ_INSIGHTS_QUEUE}
+      INSIGHT_ACTIVE_JOB_LIMIT: ${INSIGHT_ACTIVE_JOB_LIMIT}
+      INSIGHT_PROCESSING_ENABLED: ${INSIGHT_PROCESSING_ENABLED}
+      INSIGHT_AI_URL: ${INSIGHT_AI_URL}
+      INSIGHT_AI_MODEL: ${INSIGHT_AI_MODEL}
+      INSIGHT_AI_API_KEY: ${INSIGHT_AI_API_KEY}
+    ports:
+      - "${PORT}:${PORT}"
+    volumes:
+      - .:/app
+      - api_node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  api_node_modules:
+  postgres_data:
+  rabbitmq_data:
