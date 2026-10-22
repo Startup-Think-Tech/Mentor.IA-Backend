@@ -542,6 +542,14 @@ export class DiagnosticosRepository {
     });
   }
 
+  findPendingDiagnosticoQuestions(diagnosticoId: string) {
+    return this.prisma.diagnosticoQuestao.findMany({
+      where: { diagnosticoId, resposta: null },
+      orderBy: { ordem: 'asc' },
+      select: questaoSelect,
+    });
+  }
+
   findAlunoDiagnosticoQuestionByResponseId(
     alunoId: string,
     diagnosticoId: string,

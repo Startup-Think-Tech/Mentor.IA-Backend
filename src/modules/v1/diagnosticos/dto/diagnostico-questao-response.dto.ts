@@ -5,8 +5,14 @@ class DiagnosticoAlternativaResponseDto {
   @ApiProperty({ example: 'A' })
   letter!: string;
 
-  @ApiProperty({ example: 'Texto da alternativa.' })
-  text!: string;
+  @ApiPropertyOptional({ example: 'Texto da alternativa.', nullable: true })
+  text!: string | null;
+
+  @ApiPropertyOptional({
+    example: 'https://enem.dev/2023/questions/141/alternativa.jpg',
+    nullable: true,
+  })
+  imageUrl!: string | null;
 }
 
 export class DiagnosticoQuestaoResponseDto {

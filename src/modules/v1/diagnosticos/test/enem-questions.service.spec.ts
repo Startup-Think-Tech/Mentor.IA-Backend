@@ -18,8 +18,8 @@ const enemQuestion = {
   alternativesIntroduction: 'Qual é a alternativa correta?',
   correctAlternative: 'B',
   alternatives: [
-    { letter: 'A', text: 'Alternativa A', isCorrect: false },
-    { letter: 'B', text: 'Alternativa B', isCorrect: true },
+    { letter: 'A', text: 'Alternativa A', file: null, isCorrect: false },
+    { letter: 'B', text: 'Alternativa B', file: null, isCorrect: true },
   ],
 };
 
@@ -48,8 +48,8 @@ describe('EnemQuestionsService', () => {
       context: null,
       question: 'Qual é a alternativa correta?',
       alternatives: [
-        { letter: 'A', text: 'Alternativa A' },
-        { letter: 'B', text: 'Alternativa B' },
+        { letter: 'A', text: 'Alternativa A', imageUrl: null },
+        { letter: 'B', text: 'Alternativa B', imageUrl: null },
       ],
     });
     expect(JSON.stringify(question)).not.toContain('correctAlternative');
@@ -68,5 +68,76 @@ describe('EnemQuestionsService', () => {
     await expect(service.isAlternativeCorrect(reference, 'A')).resolves.toBe(
       false,
     );
+  });
+
+  it('preserva uma alternativa visual hospedada pelo ENEM', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...enemQuestion,
+          alternatives: [
+            {
+              letter: 'A',
+              text: null,
+              file: 'https://enem.dev/2023/questions/1/alternative-a.png',
+              isCorrect: false,
+            },
+          ],
+        }),
+    } as Response);
+
+    await expect(service.getPublicQuestion(reference)).resolves.toMatchObject({
+      alternatives: [
+        {
+          letter: 'A',
+          text: null,
+          imageUrl: 'https://enem.dev/2023/questions/1/alternative-a.png',
+        },
+      ],
+    });
+  });
+
+  it('remove uma imagem de alternativa de origem não confiável', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...enemQuestion,
+          alternatives: [
+            {
+              letter: 'A',
+              text: null,
+              file: 'https://example.com/alternative-a.png',
+              isCorrect: false,
+            },
+          ],
+        }),
+    } as Response);
+
+    await expect(service.getPublicQuestion(reference)).resolves.toMatchObject({
+      alternatives: [{ letter: 'A', text: null, imageUrl: null }],
+    });
+  });
+
+  it('mantém alternativas sem conteúdo quando a fonte do ENEM estiver incompleta', async () => {
+    jest.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...enemQuestion,
+          alternatives: [
+            { letter: 'A', text: null, file: null, isCorrect: false },
+            { letter: 'B', text: null, file: null, isCorrect: false },
+          ],
+        }),
+    } as Response);
+
+    await expect(service.getPublicQuestion(reference)).resolves.toMatchObject({
+      alternatives: [
+        { letter: 'A', text: null, imageUrl: null },
+        { letter: 'B', text: null, imageUrl: null },
+      ],
+    });
   });
 });

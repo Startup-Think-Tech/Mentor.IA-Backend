@@ -78,7 +78,9 @@ export class DiagnosticosService {
     }
 
     const questoes =
-      await this.diagnosticosRepository.findDiagnosticoQuestions(diagnosticoId);
+      await this.diagnosticosRepository.findPendingDiagnosticoQuestions(
+        diagnosticoId,
+      );
 
     return Promise.all(
       questoes.map((questao) =>
@@ -313,7 +315,6 @@ export class DiagnosticosService {
       restantes: questoes.length - respondidas.length,
       completo: respondidas.length === questoes.length,
       proximaQuestaoId: proxima?.id ?? null,
-      respostas: respondidas.map((questao) => questao.resposta),
     };
   }
 

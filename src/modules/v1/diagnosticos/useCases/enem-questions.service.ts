@@ -5,6 +5,7 @@ import { getEnemDisciplineByQuestionIndex } from './enem-discipline';
 type EnemAlternative = {
   letter: string;
   text: string | null;
+  file: string | null;
 };
 
 type EnemQuestion = {
@@ -31,12 +32,11 @@ export class EnemQuestionsService {
       context: question.context,
       question: question.alternativesIntroduction,
       title: question.title,
-      alternatives: question.alternatives
-        .filter((alternative) => alternative.text)
-        .map((alternative) => ({
-          letter: alternative.letter,
-          text: alternative.text ?? '',
-        })),
+      alternatives: question.alternatives.map((alternative) => ({
+        letter: alternative.letter,
+        text: alternative.text,
+        imageUrl: this.getTrustedImageUrl(alternative.file),
+      })),
     };
   }
 
@@ -78,6 +78,7 @@ export class EnemQuestionsService {
       typeof question.title === 'string' &&
       typeof question.year === 'number' &&
       typeof question.index === 'number' &&
+      (typeof question.context === 'string' || question.context === null) &&
       typeof question.alternativesIntroduction === 'string' &&
       typeof question.correctAlternative === 'string' &&
       Array.isArray(question.alternatives) &&
@@ -85,8 +86,22 @@ export class EnemQuestionsService {
         (alternative) =>
           typeof alternative?.letter === 'string' &&
           (typeof alternative.text === 'string' || alternative.text === null) &&
+          (typeof alternative.file === 'string' || alternative.file === null) &&
           typeof alternative.isCorrect === 'boolean',
       )
     );
+  }
+
+  private getTrustedImageUrl(url: string | null) {
+    return url && this.isEnemImageUrl(url) ? url : null;
+  }
+
+  private isEnemImageUrl(url: string) {
+    try {
+      const imageUrl = new URL(url);
+      return imageUrl.protocol === 'https:' && imageUrl.hostname === 'enem.dev';
+    } catch {
+      return false;
+    }
   }
 }

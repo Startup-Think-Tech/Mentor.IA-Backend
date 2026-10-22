@@ -25,6 +25,7 @@ describe('DiagnosticosService', () => {
   const findAlunoDiagnosticoHistory = jest.fn();
   const findAlunoDiagnosticoById = jest.fn();
   const findDiagnosticoQuestions = jest.fn();
+  const findPendingDiagnosticoQuestions = jest.fn();
   const findAlunoDiagnosticoQuestionByResponseId = jest.fn();
   const registerAlunoDiagnosticoResponses = jest.fn();
   const updateAlunoDiagnosticoResponse = jest.fn();
@@ -37,6 +38,7 @@ describe('DiagnosticosService', () => {
     findAlunoDiagnosticoHistory,
     findAlunoDiagnosticoById,
     findDiagnosticoQuestions,
+    findPendingDiagnosticoQuestions,
     findAlunoDiagnosticoQuestionByResponseId,
     registerAlunoDiagnosticoResponses,
     updateAlunoDiagnosticoResponse,
@@ -162,6 +164,42 @@ describe('DiagnosticosService', () => {
       completo: false,
       proximaQuestaoId: '66666666-6666-4666-8666-666666666666',
     });
+    expect(result).not.toHaveProperty('respostas');
+  });
+
+  it('carrega somente as questões ainda não respondidas', async () => {
+    const questaoPendente = {
+      id: '44444444-4444-4444-8444-444444444444',
+      questionYear: 2023,
+      questionIndex: 1,
+      language: 'default',
+      ordem: 1,
+      disciplinaId: null,
+      conteudoId: null,
+    };
+    const questaoPublica = {
+      id: questaoPendente.id,
+      year: 2023,
+      index: 1,
+      language: 'default',
+      discipline: 'linguagens',
+      title: 'Questão',
+      context: null,
+      question: 'Enunciado',
+      alternatives: [{ letter: 'A', text: 'Alternativa' }],
+    };
+    findAlunoDiagnosticoById.mockResolvedValue(diagnosticoRecord());
+    findPendingDiagnosticoQuestions.mockResolvedValue([questaoPendente]);
+    getPublicQuestion.mockResolvedValue(questaoPublica);
+
+    await expect(
+      service.findQuestions(ALUNO_ID, DIAGNOSTICO_ID),
+    ).resolves.toEqual([questaoPublica]);
+
+    expect(findPendingDiagnosticoQuestions).toHaveBeenCalledWith(
+      DIAGNOSTICO_ID,
+    );
+    expect(findDiagnosticoQuestions).not.toHaveBeenCalled();
   });
 
   it('rejeita a mesma questão repetida no mesmo POST', async () => {
@@ -302,6 +340,6 @@ describe('DiagnosticosService', () => {
       OUTRO_ALUNO_ID,
       DIAGNOSTICO_ID,
     );
-    expect(findDiagnosticoQuestions).not.toHaveBeenCalled();
+    expect(findPendingDiagnosticoQuestions).not.toHaveBeenCalled();
   });
 });
