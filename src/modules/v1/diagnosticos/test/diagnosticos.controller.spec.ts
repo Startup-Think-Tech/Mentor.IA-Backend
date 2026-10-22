@@ -1,9 +1,9 @@
 import { AlunoPapel } from '@prisma/client';
-import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
-import { DiagnosticosController } from './diagnosticos.controller';
-import { DiagnosticosService } from './diagnosticos.service';
+import type { AuthenticatedUser } from '../../auth/types/authenticated-user.type';
+import { DiagnosticosController } from '../diagnosticos.controller';
+import { DiagnosticosService } from '../diagnosticos.service';
 
-jest.mock('../auth/guards/jwt-auth.guard', () => ({
+jest.mock('../../auth/guards/jwt-auth.guard', () => ({
   JwtAuthGuard: class JwtAuthGuard {},
 }));
 
@@ -72,7 +72,7 @@ describe('DiagnosticosController', () => {
 
   it('usa o aluno autenticado ao editar uma resposta', async () => {
     const respostaId = '55555555-5555-4555-8555-555555555555';
-    const dto = { alternativaMarcada: 'B', acertoInformado: false };
+    const dto = { alternativaMarcada: 'B' };
 
     await controller.updateResponse(user, DIAGNOSTICO_ID, respostaId, dto);
 

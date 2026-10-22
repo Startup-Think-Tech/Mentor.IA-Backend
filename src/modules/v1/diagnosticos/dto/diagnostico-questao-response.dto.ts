@@ -1,6 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { EnemDiscipline } from '../useCases/enem-discipline';
 
+class DiagnosticoAlternativaResponseDto {
+  @ApiProperty({ example: 'A' })
+  letter!: string;
+
+  @ApiProperty({ example: 'Texto da alternativa.' })
+  text!: string;
+}
+
 export class DiagnosticoQuestaoResponseDto {
   @ApiProperty({ format: 'uuid' })
   id!: string;
@@ -22,12 +30,15 @@ export class DiagnosticoQuestaoResponseDto {
   })
   discipline!: EnemDiscipline;
 
-  @ApiProperty({ example: 11 })
-  ordem!: number;
+  @ApiProperty({ example: 'Título da questão.' })
+  title!: string;
 
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
-  disciplinaId!: string | null;
+  @ApiPropertyOptional({ example: 'Contexto da questão.', nullable: true })
+  context!: string | null;
 
-  @ApiPropertyOptional({ format: 'uuid', nullable: true })
-  conteudoId!: string | null;
+  @ApiProperty({ example: 'Enunciado da questão.' })
+  question!: string;
+
+  @ApiProperty({ type: [DiagnosticoAlternativaResponseDto] })
+  alternatives!: DiagnosticoAlternativaResponseDto[];
 }

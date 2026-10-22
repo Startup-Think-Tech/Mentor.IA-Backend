@@ -93,7 +93,7 @@ export class DiagnosticosController {
   @ApiOperation({
     summary: 'Registra respostas do diagnóstico',
     description:
-      'Aceita uma ou mais respostas. Questões já respondidas devem ser alteradas pela rota PATCH. Correções informadas pelo frontend são persistidas como não verificadas.',
+      'Aceita uma ou mais respostas. Questões já respondidas devem ser alteradas pela rota PATCH. O backend consulta o gabarito na fonte externa e persiste a correção verificada.',
   })
   @ApiParam({ name: 'id', description: 'UUID do diagnóstico.', format: 'uuid' })
   @ApiBody({
@@ -106,7 +106,6 @@ export class DiagnosticosController {
             {
               diagnosticoQuestaoId: '11111111-1111-4111-8111-111111111111',
               alternativaMarcada: 'A',
-              acertoInformado: true,
             },
           ],
         },
@@ -118,12 +117,10 @@ export class DiagnosticosController {
             {
               diagnosticoQuestaoId: '11111111-1111-4111-8111-111111111111',
               alternativaMarcada: 'A',
-              acertoInformado: true,
             },
             {
               diagnosticoQuestaoId: '22222222-2222-4222-8222-222222222222',
               alternativaMarcada: 'C',
-              acertoInformado: false,
             },
           ],
         },
@@ -166,10 +163,9 @@ export class DiagnosticosController {
     type: AtualizarRespostaDiagnosticoDto,
     examples: {
       editarResposta: {
-        summary: 'Alterar alternativa/correção informada',
+        summary: 'Alterar alternativa',
         value: {
           alternativaMarcada: 'B',
-          acertoInformado: false,
         },
       },
     },
@@ -242,7 +238,7 @@ export class DiagnosticosController {
   @ApiOperation({
     summary: 'Lista as referências das questões de um diagnóstico',
     description:
-      'Retorna somente referências para o Frontend carregar o conteúdo visual na enem.dev e metadados internos quando disponíveis.',
+      'Retorna enunciado e alternativas sem expor o gabarito da fonte externa.',
   })
   @ApiParam({ name: 'id', description: 'UUID do diagnóstico.', format: 'uuid' })
   @ApiOkResponse({
