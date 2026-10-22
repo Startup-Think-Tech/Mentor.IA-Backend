@@ -5,8 +5,8 @@ jest.mock('@nestjs/config', () => ({
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InsightJobStatus } from '@prisma/client';
-import { InsightsRepository } from './insights.repository';
-import { InsightsService } from './insights.service';
+import { InsightsRepository } from '../insights.repository';
+import { InsightsService } from '../insights.service';
 
 describe('InsightsService', () => {
   const alunoId = 'f0bb2801-bc8e-4bac-a135-954b5be1335d';
@@ -84,5 +84,19 @@ describe('InsightsService', () => {
     expect(insightsRepository.findAlunoJob.mock.calls).toEqual([
       [alunoId, job.id],
     ]);
+  });
+
+  it('does not return provider safety classifications as insights', async () => {
+    insightsRepository.findAlunoInsights.mockResolvedValue([
+      {
+        id: 'invalid-insight',
+        jobId: job.id,
+        conteudo: 'User Safety: safe',
+        criadoEm: new Date('2026-09-30T12:00:00.000Z'),
+        insightsDisciplinas: [],
+      },
+    ]);
+
+    await expect(service.findAll(alunoId)).resolves.toEqual([]);
   });
 });

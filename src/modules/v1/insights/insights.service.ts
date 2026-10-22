@@ -82,7 +82,9 @@ export class InsightsService {
 
   async findAll(alunoId: string) {
     const insights = await this.insightsRepository.findAlunoInsights(alunoId);
-    return insights.map((insight) => this.toInsightResponse(insight));
+    return insights
+      .filter((insight) => !isProviderSafetyClassification(insight.conteudo))
+      .map((insight) => this.toInsightResponse(insight));
   }
 
   async findOne(alunoId: string, insightId: string) {
@@ -148,4 +150,11 @@ export class InsightsService {
       .update(JSON.stringify(payload ?? {}))
       .digest('hex');
   }
+}
+
+function isProviderSafetyClassification(content: string) {
+  const normalized = content.trim().toLowerCase();
+  return (
+    normalized === 'user safety: safe' || normalized === 'user safety: unsafe'
+  );
 }
