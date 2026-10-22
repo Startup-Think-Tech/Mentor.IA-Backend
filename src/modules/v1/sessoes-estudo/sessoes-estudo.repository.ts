@@ -6,8 +6,8 @@ import {
   SessaoEstudoStatus,
   SessaoEstudoTipo,
 } from '@prisma/client';
-import { dataRevisaoUtc } from '../revisoes/revisao-intervalos';
-import { recalcularSessoesFuturas } from '../cronogramas/cronograma-adaptativo';
+import { dataRevisaoUtc } from '../revisoes/useCases/revisao-intervalos';
+import { recalcularSessoesFuturas } from '../cronogramas/useCases/cronograma-adaptativo';
 import { PrismaService } from '../prisma/prisma.service';
 import { ListarSessoesEstudoDto } from './dto/listar-sessoes-estudo.dto';
 

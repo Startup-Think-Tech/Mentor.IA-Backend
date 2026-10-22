@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { selectDiagnosticoQuestionReferences } from './diagnostico-reference-pool';
-import { getEnemDisciplineByQuestionIndex } from './enem-discipline';
+import { selectDiagnosticoQuestionReferences } from './useCases/diagnostico-reference-pool';
+import { getEnemDisciplineByQuestionIndex } from './useCases/enem-discipline';
 import type { AtualizarRespostaDiagnosticoDto } from './dto/atualizar-resposta-diagnostico.dto';
 import type { RegistrarRespostasDiagnosticoDto } from './dto/registrar-respostas-diagnostico.dto';
 import {

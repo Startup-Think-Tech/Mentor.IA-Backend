@@ -1,5 +1,5 @@
 import { NivelPrioridade } from '@prisma/client';
-import { calcularGap } from './gap-calculator';
+import { calcularGap } from '../useCases/gap-calculator';
 
 describe('calcularGap', () => {
   it.each([

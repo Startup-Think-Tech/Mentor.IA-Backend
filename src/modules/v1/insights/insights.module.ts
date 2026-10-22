@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { InsightsController } from './insights.controller';
-import { InsightConsumerController } from './insight-consumer.controller';
-import { InsightProcessingService } from './insight-processing.service';
 import { RabbitMqModule } from '../rabbitmq/rabbitmq.module';
 import { InsightsRepository } from './insights.repository';
 import { InsightsService } from './insights.service';
+import { InsightConsumerController } from './useCases/insight-consumer.controller';
+import { InsightProcessingService } from './useCases/insight-processing.service';
 
 @Module({
   imports: [AuthModule, RabbitMqModule],

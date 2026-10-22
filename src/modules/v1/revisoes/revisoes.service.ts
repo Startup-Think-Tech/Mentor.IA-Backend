@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ResultadoRevisaoTipo, RevisaoStatus } from '@prisma/client';
-import { revisaoEstaVencida } from './revisao-intervalos';
+import { revisaoEstaVencida } from './useCases/revisao-intervalos';
 import { RevisoesRepository, type RevisaoRecord } from './revisoes.repository';
 
 @Injectable()

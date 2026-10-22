@@ -1,7 +1,7 @@
 import { CronogramaStatus } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { recalcularSessoesFuturas } from '../../cronogramas/cronograma-adaptativo';
+import { recalcularSessoesFuturas } from '../../cronogramas/useCases/cronograma-adaptativo';
 
 type DisponibilidadeSemanal = {
   diaSemana: number;

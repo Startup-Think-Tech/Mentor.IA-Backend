@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DisciplinasController } from './disciplinas.controller';
-import { DisciplinasService } from './disciplinas.service';
+import { DisciplinasController } from '../disciplinas.controller';
+import { DisciplinasService } from '../disciplinas.service';
 
 jest.mock('../auth/guards/jwt-auth.guard', () => ({
   JwtAuthGuard: class JwtAuthGuard {},

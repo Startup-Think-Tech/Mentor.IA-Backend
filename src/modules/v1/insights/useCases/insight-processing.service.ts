@@ -7,8 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InsightJobStatus } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
-import { PrismaService } from '../prisma/prisma.service';
-import { RabbitMqService } from '../rabbitmq/rabbitmq.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { RabbitMqService } from '../../rabbitmq/rabbitmq.service';
 
 @Injectable()
 export class InsightProcessingService implements OnModuleInit, OnModuleDestroy {

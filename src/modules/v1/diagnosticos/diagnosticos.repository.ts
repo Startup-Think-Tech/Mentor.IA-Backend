@@ -5,12 +5,12 @@ import {
   TipoOrigemDesempenho,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { calcularGap } from '../gaps/gap-calculator';
-import type { DiagnosticoQuestionReference } from './diagnostico-reference-pool';
+import { calcularGap } from '../gaps/useCases/gap-calculator';
+import type { DiagnosticoQuestionReference } from './useCases/diagnostico-reference-pool';
 import {
   ENEM_DISCIPLINE_METADATA,
   getEnemDisciplineByQuestionIndex,
-} from './enem-discipline';
+} from './useCases/enem-discipline';
 
 const diagnosticoSelect = {
   id: true,

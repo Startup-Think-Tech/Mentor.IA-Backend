@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DiagnosticoStatus } from '@prisma/client';
-import { selectDiagnosticoQuestionReferences } from './diagnostico-reference-pool';
+import { selectDiagnosticoQuestionReferences } from './useCases/diagnostico-reference-pool';
 import { DiagnosticosRepository } from './diagnosticos.repository';
 import { DiagnosticosService } from './diagnosticos.service';
 

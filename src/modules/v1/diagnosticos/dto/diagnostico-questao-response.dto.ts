@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { EnemDiscipline } from '../enem-discipline';
+import type { EnemDiscipline } from '../useCases/enem-discipline';
 
 export class DiagnosticoQuestaoResponseDto {
   @ApiProperty({ format: 'uuid' })

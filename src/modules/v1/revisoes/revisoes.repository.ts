@@ -8,12 +8,12 @@ import {
   SessaoEstudoTipo,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { recalcularSessoesFuturas } from '../cronogramas/cronograma-adaptativo';
+import { recalcularSessoesFuturas } from '../cronogramas/useCases/cronograma-adaptativo';
 import {
   dataRevisaoUtc,
   inicioDiaUtc,
   proximoIntervalo,
-} from './revisao-intervalos';
+} from './useCases/revisao-intervalos';
 
 const revisaoSelect = {
   id: true,

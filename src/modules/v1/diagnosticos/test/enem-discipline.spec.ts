@@ -1,7 +1,7 @@
 import {
   ENEM_DISCIPLINE_SUBJECTS,
   getEnemDisciplineByQuestionIndex,
-} from './enem-discipline';
+} from '../useCases/enem-discipline';
 
 describe('ENEM discipline mapping', () => {
   it.each([

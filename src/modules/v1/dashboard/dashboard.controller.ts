@@ -12,7 +12,7 @@ import {
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/types/authenticated-user.type';
-import { DashboardQueryDto } from './dashboard-query.dto';
+import { DashboardQueryDto } from './dto/dashboard-query.dto';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('Dashboard')

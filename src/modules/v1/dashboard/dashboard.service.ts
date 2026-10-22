@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { AlunoPapel } from '@prisma/client';
 import { AuthenticatedUser } from '../auth/types/authenticated-user.type';
-import { DashboardQueryDto } from './dashboard-query.dto';
+import { DashboardQueryDto } from './dto/dashboard-query.dto';
 import { DashboardRepository } from './dashboard.repository';
 
 type DashboardVisao = 'resumo' | 'historico';

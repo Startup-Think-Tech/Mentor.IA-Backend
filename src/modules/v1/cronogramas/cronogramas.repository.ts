@@ -7,7 +7,10 @@ import {
 } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { planejarSessoes, type GapPlanejamento } from './cronograma-engine';
+import {
+  planejarSessoes,
+  type GapPlanejamento,
+} from './useCases/cronograma-engine';
 
 const cronogramaSelect = {
   id: true,
