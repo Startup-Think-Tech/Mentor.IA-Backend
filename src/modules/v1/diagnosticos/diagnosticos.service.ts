@@ -5,20 +5,20 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { selectDiagnosticoQuestionReferences } from './useCases/diagnostico-reference-pool';
-import { getEnemDisciplineByQuestionIndex } from './useCases/enem-discipline';
 import type { AtualizarRespostaDiagnosticoDto } from './dto/atualizar-resposta-diagnostico.dto';
 import type { RegistrarRespostasDiagnosticoDto } from './dto/registrar-respostas-diagnostico.dto';
 import {
-  DiagnosticoQuestaoRecord,
   DiagnosticoRecord,
   DiagnosticosRepository,
 } from './diagnosticos.repository';
 import type { DesempenhoRecord } from './desempenhos/desempenhos.repository';
+import { EnemQuestionsService } from './useCases/enem-questions.service';
 
 @Injectable()
 export class DiagnosticosService {
   constructor(
     private readonly diagnosticosRepository: DiagnosticosRepository,
+    private readonly enemQuestionsService: EnemQuestionsService,
   ) {}
 
   async create(alunoId: string) {
@@ -80,7 +80,11 @@ export class DiagnosticosService {
     const questoes =
       await this.diagnosticosRepository.findDiagnosticoQuestions(diagnosticoId);
 
-    return questoes.map((questao) => this.toQuestionResponse(questao));
+    return Promise.all(
+      questoes.map((questao) =>
+        this.enemQuestionsService.getPublicQuestion(questao),
+      ),
+    );
   }
 
   async registerResponses(
@@ -97,17 +101,48 @@ export class DiagnosticosService {
       );
     }
 
+    const diagnostico =
+      await this.diagnosticosRepository.findAlunoDiagnosticoById(
+        alunoId,
+        diagnosticoId,
+      );
+    if (!diagnostico) {
+      throw new NotFoundException('Diagnóstico não encontrado.');
+    }
+
+    const questoes =
+      await this.diagnosticosRepository.findDiagnosticoQuestions(diagnosticoId);
+    const questoesPorId = new Map(
+      questoes.map((questao) => [questao.id, questao]),
+    );
+    const respostas = await Promise.all(
+      dto.respostas.map(async (resposta) => {
+        const questao = questoesPorId.get(resposta.diagnosticoQuestaoId);
+        if (!questao) {
+          throw new BadRequestException(
+            'Uma ou mais questões não pertencem ao diagnóstico informado.',
+          );
+        }
+
+        const alternativaMarcada = this.normalizeAlternative(
+          resposta.alternativaMarcada,
+        );
+        return {
+          diagnosticoQuestaoId: resposta.diagnosticoQuestaoId,
+          alternativaMarcada,
+          acertoInformado: await this.enemQuestionsService.isAlternativeCorrect(
+            questao,
+            alternativaMarcada,
+          ),
+        };
+      }),
+    );
+
     const result =
       await this.diagnosticosRepository.registerAlunoDiagnosticoResponses(
         alunoId,
         diagnosticoId,
-        dto.respostas.map((resposta) => ({
-          diagnosticoQuestaoId: resposta.diagnosticoQuestaoId,
-          alternativaMarcada: this.normalizeAlternative(
-            resposta.alternativaMarcada,
-          ),
-          acertoInformado: resposta.acertoInformado,
-        })),
+        respostas,
       );
 
     if (result.kind !== 'ok') {
@@ -128,14 +163,30 @@ export class DiagnosticosService {
     respostaId: string,
     dto: AtualizarRespostaDiagnosticoDto,
   ) {
+    const questao =
+      await this.diagnosticosRepository.findAlunoDiagnosticoQuestionByResponseId(
+        alunoId,
+        diagnosticoId,
+        respostaId,
+      );
+    if (!questao) {
+      throw new NotFoundException('Resposta não encontrada neste diagnóstico.');
+    }
+
+    const alternativaMarcada = this.normalizeAlternative(
+      dto.alternativaMarcada,
+    );
     const result =
       await this.diagnosticosRepository.updateAlunoDiagnosticoResponse(
         alunoId,
         diagnosticoId,
         respostaId,
         {
-          alternativaMarcada: this.normalizeAlternative(dto.alternativaMarcada),
-          acertoInformado: dto.acertoInformado,
+          alternativaMarcada,
+          acertoInformado: await this.enemQuestionsService.isAlternativeCorrect(
+            questao,
+            alternativaMarcada,
+          ),
         },
       );
 
@@ -304,19 +355,6 @@ export class DiagnosticosService {
         correcaoVerificada: registro.correcaoVerificada,
         registradoEm: registro.registradoEm,
       })),
-    };
-  }
-
-  private toQuestionResponse(questao: DiagnosticoQuestaoRecord) {
-    return {
-      id: questao.id,
-      year: questao.questionYear,
-      index: questao.questionIndex,
-      language: questao.language,
-      discipline: getEnemDisciplineByQuestionIndex(questao.questionIndex),
-      ordem: questao.ordem,
-      disciplinaId: questao.disciplinaId,
-      conteudoId: questao.conteudoId,
     };
   }
 }

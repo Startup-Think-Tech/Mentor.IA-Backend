@@ -57,7 +57,7 @@ export type RespostaDiagnosticoRecord = Prisma.RespostaDiagnosticoGetPayload<{
 export type RegistrarRespostaInput = {
   diagnosticoQuestaoId: string;
   alternativaMarcada: string;
-  acertoInformado?: boolean;
+  acertoInformado: boolean;
 };
 
 @Injectable()
@@ -198,8 +198,8 @@ export class DiagnosticosRepository {
           data: {
             diagnosticoQuestaoId: resposta.diagnosticoQuestaoId,
             alternativaMarcada: resposta.alternativaMarcada,
-            acertoInformado: resposta.acertoInformado ?? null,
-            correcaoVerificada: false,
+            acertoInformado: resposta.acertoInformado,
+            correcaoVerificada: true,
           },
         });
       }
@@ -227,7 +227,7 @@ export class DiagnosticosRepository {
     alunoId: string,
     diagnosticoId: string,
     respostaId: string,
-    data: { alternativaMarcada: string; acertoInformado?: boolean },
+    data: { alternativaMarcada: string; acertoInformado: boolean },
   ) {
     return this.prisma.$transaction(async (transaction) => {
       await transaction.$executeRaw`
@@ -263,8 +263,8 @@ export class DiagnosticosRepository {
         where: { id: respostaId },
         data: {
           alternativaMarcada: data.alternativaMarcada,
-          acertoInformado: data.acertoInformado ?? null,
-          correcaoVerificada: false,
+          acertoInformado: data.acertoInformado,
+          correcaoVerificada: true,
         },
       });
 
@@ -538,6 +538,21 @@ export class DiagnosticosRepository {
     return this.prisma.diagnosticoQuestao.findMany({
       where: { diagnosticoId },
       orderBy: { ordem: 'asc' },
+      select: questaoSelect,
+    });
+  }
+
+  findAlunoDiagnosticoQuestionByResponseId(
+    alunoId: string,
+    diagnosticoId: string,
+    respostaId: string,
+  ) {
+    return this.prisma.diagnosticoQuestao.findFirst({
+      where: {
+        diagnosticoId,
+        diagnostico: { alunoId },
+        resposta: { is: { id: respostaId } },
+      },
       select: questaoSelect,
     });
   }

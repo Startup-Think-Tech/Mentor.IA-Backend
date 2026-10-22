@@ -1,11 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
-  IsBoolean,
   IsNotEmpty,
-  IsOptional,
   IsString,
   IsUUID,
   MaxLength,
@@ -25,16 +23,6 @@ export class RegistrarRespostaDiagnosticoItemDto {
   @IsNotEmpty()
   @MaxLength(8)
   alternativaMarcada!: string;
-
-  @ApiPropertyOptional({
-    description:
-      'Correção informada pelo frontend a partir do gabarito público. O backend persiste como não verificada.',
-    example: true,
-    nullable: true,
-  })
-  @IsOptional()
-  @IsBoolean()
-  acertoInformado?: boolean;
 }
 
 export class RegistrarRespostasDiagnosticoDto {

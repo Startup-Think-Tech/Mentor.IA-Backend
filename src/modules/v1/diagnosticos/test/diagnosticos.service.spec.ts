@@ -1,8 +1,9 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { DiagnosticoStatus } from '@prisma/client';
-import { selectDiagnosticoQuestionReferences } from './useCases/diagnostico-reference-pool';
-import { DiagnosticosRepository } from './diagnosticos.repository';
-import { DiagnosticosService } from './diagnosticos.service';
+import { selectDiagnosticoQuestionReferences } from '../useCases/diagnostico-reference-pool';
+import { DiagnosticosRepository } from '../diagnosticos.repository';
+import { DiagnosticosService } from '../diagnosticos.service';
+import { EnemQuestionsService } from '../useCases/enem-questions.service';
 
 const ALUNO_ID = '11111111-1111-4111-8111-111111111111';
 const OUTRO_ALUNO_ID = '22222222-2222-4222-8222-222222222222';
@@ -24,6 +25,7 @@ describe('DiagnosticosService', () => {
   const findAlunoDiagnosticoHistory = jest.fn();
   const findAlunoDiagnosticoById = jest.fn();
   const findDiagnosticoQuestions = jest.fn();
+  const findAlunoDiagnosticoQuestionByResponseId = jest.fn();
   const registerAlunoDiagnosticoResponses = jest.fn();
   const updateAlunoDiagnosticoResponse = jest.fn();
   const finalizeAlunoDiagnostico = jest.fn();
@@ -35,17 +37,25 @@ describe('DiagnosticosService', () => {
     findAlunoDiagnosticoHistory,
     findAlunoDiagnosticoById,
     findDiagnosticoQuestions,
+    findAlunoDiagnosticoQuestionByResponseId,
     registerAlunoDiagnosticoResponses,
     updateAlunoDiagnosticoResponse,
     finalizeAlunoDiagnostico,
     findAlunoDiagnosticoResult,
   } as unknown as DiagnosticosRepository;
 
+  const getPublicQuestion = jest.fn();
+  const isAlternativeCorrect = jest.fn();
+  const enemQuestionsService = {
+    getPublicQuestion,
+    isAlternativeCorrect,
+  } as unknown as EnemQuestionsService;
+
   let service: DiagnosticosService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new DiagnosticosService(repository);
+    service = new DiagnosticosService(repository, enemQuestionsService);
   });
 
   it('cria diagnóstico para o aluno autenticado com 20 referências externas', async () => {
@@ -90,6 +100,18 @@ describe('DiagnosticosService', () => {
   });
 
   it('registra respostas no escopo do aluno e retorna o progresso', async () => {
+    const questao = {
+      id: '44444444-4444-4444-8444-444444444444',
+      questionYear: 2023,
+      questionIndex: 1,
+      language: 'default',
+      ordem: 1,
+      disciplinaId: null,
+      conteudoId: null,
+    };
+    findAlunoDiagnosticoById.mockResolvedValue(diagnosticoRecord());
+    findDiagnosticoQuestions.mockResolvedValue([questao]);
+    isAlternativeCorrect.mockResolvedValue(true);
     registerAlunoDiagnosticoResponses.mockResolvedValue({
       kind: 'ok',
       status: DiagnosticoStatus.EM_ANDAMENTO,
@@ -118,7 +140,6 @@ describe('DiagnosticosService', () => {
         {
           diagnosticoQuestaoId: '44444444-4444-4444-8444-444444444444',
           alternativaMarcada: ' a ',
-          acertoInformado: true,
         },
       ],
     });
@@ -178,6 +199,16 @@ describe('DiagnosticosService', () => {
   });
 
   it('impede alterar resposta de diagnóstico encerrado', async () => {
+    findAlunoDiagnosticoQuestionByResponseId.mockResolvedValue({
+      id: '44444444-4444-4444-8444-444444444444',
+      questionYear: 2023,
+      questionIndex: 1,
+      language: 'default',
+      ordem: 1,
+      disciplinaId: null,
+      conteudoId: null,
+    });
+    isAlternativeCorrect.mockResolvedValue(false);
     updateAlunoDiagnosticoResponse.mockResolvedValue({ kind: 'closed' });
 
     await expect(
@@ -185,7 +216,7 @@ describe('DiagnosticosService', () => {
         ALUNO_ID,
         DIAGNOSTICO_ID,
         '55555555-5555-4555-8555-555555555555',
-        { alternativaMarcada: 'B', acertoInformado: false },
+        { alternativaMarcada: 'B' },
       ),
     ).rejects.toThrow(
       'Respostas só podem ser alteradas enquanto o diagnóstico estiver em andamento.',
