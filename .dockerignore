@@ -1,0 +1,21 @@
+# Dependencias e compilacao locais
+node_modules
+dist
+coverage
+.git
+.gitignore
+
+# NUNCA incluir segredos no contexto de build
+.env
+.env.*
+*.pem
+*.key
+
+# Arquivos locais e temporarios
+*.log
+npm-debug.log*
+.DS_Store
+.vscode
+.idea
+.tmp
+.temp
